@@ -5,10 +5,20 @@ const getDriveClient = () => {
     const scopes = ['https://www.googleapis.com/auth/drive.readonly'];
 
     // Authenticate using service account
+    const client_email = process.env.GOOGLE_CLIENT_EMAIL || process.env.GOOGLE_SERVICE_ACCOUNT_EMAIL;
+    const private_key = process.env.GOOGLE_PRIVATE_KEY?.replace(/\\n/g, '\n');
+
+    if (!client_email || !private_key) {
+        console.error('Missing Google Credentials:', {
+            hasEmail: !!client_email,
+            hasKey: !!private_key
+        });
+    }
+
     const auth = new google.auth.GoogleAuth({
         credentials: {
-            client_email: process.env.GOOGLE_SERVICE_ACCOUNT_EMAIL,
-            private_key: process.env.GOOGLE_PRIVATE_KEY?.replace(/\\n/g, '\n'), // Handle escaped newlines
+            client_email,
+            private_key,
         },
         scopes,
     });
