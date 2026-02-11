@@ -296,10 +296,17 @@ const Gallery = () => {
                             {/* Responsive Layout: Masonry Columns based on Density */
                                 (() => {
                                     const columnClasses = {
-                                        low: 'columns-1 sm:columns-2 lg:columns-2 gap-8 space-y-8',
-                                        medium: 'columns-2 sm:columns-2 md:columns-3 lg:columns-4 gap-4 sm:gap-6 space-y-4 sm:space-y-6',
-                                        high: 'columns-3 sm:columns-4 md:columns-5 lg:columns-6 gap-2 space-y-2'
+                                        low: 'columns-1 sm:columns-2 lg:columns-2 gap-8',
+                                        medium: 'columns-2 sm:columns-2 md:columns-3 lg:columns-4 gap-4 sm:gap-6',
+                                        high: 'columns-3 sm:columns-4 md:columns-5 lg:columns-6 gap-2'
                                     };
+
+                                    const itemSpacing = {
+                                        low: 'mb-8',
+                                        medium: 'mb-4 sm:mb-6',
+                                        high: 'mb-2'
+                                    };
+
                                     return (
                                         <div className={columnClasses[gridDensity]}>
                                             {images.map((photo, index) => {
@@ -323,7 +330,11 @@ const Gallery = () => {
                                                         initial={{ opacity: 0, y: 20 }}
                                                         animate={{ opacity: 1, y: 0 }}
                                                         transition={{ duration: 0.5, delay: index * 0.05 }}
-                                                        className={`break-inside-avoid inline-block w-full bg-white p-3 shadow-[0_4px_20px_-4px_rgba(0,0,0,0.1)] hover:shadow-[0_8px_30px_-4px_rgba(0,0,0,0.15)] transition-shadow duration-300 ease-in-out cursor-zoom-in group relative mb-4 sm:mb-0`}
+                                                        className={`break-inside-avoid inline-block w-full align-top bg-white p-3 shadow-[0_4px_20px_-4px_rgba(0,0,0,0.1)] hover:shadow-[0_8px_30px_-4px_rgba(0,0,0,0.15)] transition-shadow duration-300 ease-in-out cursor-zoom-in group relative ${itemSpacing[gridDensity]}`}
+                                                        style={{
+                                                            breakInside: 'avoid',
+                                                            WebkitBreakInside: 'avoid'
+                                                        }}
                                                         onClick={() => setSelectedPhoto({
                                                             src: photo.thumbnailLink ? photo.thumbnailLink.replace(/=s\d+$/, '=s3000') : imageUrl, // Use 3000px preview
                                                             alt: photo.name,
