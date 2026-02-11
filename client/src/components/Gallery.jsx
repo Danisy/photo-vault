@@ -256,7 +256,7 @@ const Gallery = () => {
                                                 <div className="absolute inset-0 bg-black/40 opacity-0 group-hover:opacity-100 transition-opacity duration-300 flex items-end p-4">
                                                     <div className="text-white/90 font-mono text-[10px] tracking-widest uppercase border-l-2 border-film-red pl-2">
                                                         <p>{exifString}</p>
-                                                        <p className="opacity-70">{photo.createdTime?.split('T')[0]}</p>
+                                                        <p className="opacity-70">{getPhotoDate(photo).toISOString().split('T')[0]}</p>
                                                     </div>
                                                 </div>
                                             </div>
