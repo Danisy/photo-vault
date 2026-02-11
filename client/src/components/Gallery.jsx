@@ -184,6 +184,9 @@ const Gallery = () => {
                                     const height = photo.imageMediaMetadata?.height;
                                     const isPortrait = height && width ? height > width : false;
 
+                                    // Format simple EXIF string
+                                    const exifString = `${photo.imageMediaMetadata?.cameraMake || ''} ${photo.imageMediaMetadata?.cameraModel || ''} • ISO ${photo.imageMediaMetadata?.isoSpeed || '-'} • f/${photo.imageMediaMetadata?.aperture || '-'}`;
+
                                     return (
                                         <motion.div
                                             key={photo.id}
@@ -201,7 +204,7 @@ const Gallery = () => {
                                                 createdTime: photo.createdTime
                                             })}
                                         >
-                                            <div className="overflow-hidden bg-film-paper">
+                                            <div className="overflow-hidden bg-film-paper relative">
                                                 <img
                                                     src={thumbnailUrl} // Use thumbnail for grid
                                                     alt={photo.name}
@@ -217,6 +220,14 @@ const Gallery = () => {
                                                         }
                                                     }}
                                                 />
+
+                                                {/* Film Strip EXIF Overlay */}
+                                                <div className="absolute inset-0 bg-black/40 opacity-0 group-hover:opacity-100 transition-opacity duration-300 flex items-end p-4">
+                                                    <div className="text-white/90 font-mono text-[10px] tracking-widest uppercase border-l-2 border-film-red pl-2">
+                                                        <p>{exifString}</p>
+                                                        <p className="opacity-70">{photo.createdTime?.split('T')[0]}</p>
+                                                    </div>
+                                                </div>
                                             </div>
 
                                             <div className="mt-3 flex justify-between items-center opacity-70 group-hover:opacity-100 transition-opacity">

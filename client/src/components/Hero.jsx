@@ -6,12 +6,12 @@ const Hero = () => {
     const [isAboutOpen, setIsAboutOpen] = useState(false);
 
     return (
-        <section className="relative h-[60vh] flex flex-col items-center justify-center text-center px-4 overflow-hidden border-b border-film-black/10 bg-film-cream">
+        <section className="relative min-h-[60vh] flex flex-col items-center justify-center text-center px-4 py-20 border-b border-film-black/10 bg-film-cream z-20">
             <motion.div
                 initial={{ opacity: 0, y: 30 }}
                 animate={{ opacity: 1, y: 0 }}
                 transition={{ duration: 0.8, ease: "easeOut" }}
-                className="max-w-4xl mx-auto z-10"
+                className="max-w-4xl mx-auto"
             >
                 <h1 className="text-6xl md:text-8xl font-serif font-black tracking-tight text-film-black mb-6 selection:bg-film-red selection:text-white">
                     zygrace <span className="italic block md:inline font-light">Collection</span>
