@@ -12,7 +12,7 @@ function App() {
       </main>
 
       <footer className="py-12 text-center text-gray-500 text-sm border-t border-film-black/5 mt-10">
-        <p>&copy; {new Date().getFullYear()} Photo Vault. Powered by Google Drive.</p>
+        <p>&copy; {new Date().getFullYear()} zygrace Collection by Danisy Ahnaf.</p>
       </footer>
     </div>
   );
