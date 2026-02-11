@@ -4,6 +4,35 @@ import { motion, AnimatePresence } from 'framer-motion';
 
 const Lightbox = ({ image, onClose, onNext, onPrev, hasNext, hasPrev }) => {
     const [showInfo, setShowInfo] = useState(false);
+    const [touchStart, setTouchStart] = useState(null);
+    const [touchEnd, setTouchEnd] = useState(null);
+
+    // Minimum swipe distance (in px)
+    const minSwipeDistance = 50;
+
+    const onTouchStart = (e) => {
+        setTouchEnd(null); // Reset
+        setTouchStart(e.targetTouches[0].clientX);
+    };
+
+    const onTouchMove = (e) => {
+        setTouchEnd(e.targetTouches[0].clientX);
+    };
+
+    const onTouchEnd = () => {
+        if (!touchStart || !touchEnd) return;
+
+        const distance = touchStart - touchEnd;
+        const isLeftSwipe = distance > minSwipeDistance;
+        const isRightSwipe = distance < -minSwipeDistance;
+
+        if (isLeftSwipe && hasNext) {
+            onNext();
+        }
+        if (isRightSwipe && hasPrev) {
+            onPrev();
+        }
+    };
 
     useEffect(() => {
         const handleKeyDown = (e) => {
@@ -39,7 +68,12 @@ const Lightbox = ({ image, onClose, onNext, onPrev, hasNext, hasPrev }) => {
     };
 
     return (
-        <div className="fixed inset-0 z-[100] flex items-center justify-center bg-film-black/95 backdrop-blur-sm p-4 animate-in fade-in duration-200">
+        <div
+            className="fixed inset-0 z-[100] flex items-center justify-center bg-film-black/95 backdrop-blur-sm p-4 animate-in fade-in duration-200"
+            onTouchStart={onTouchStart}
+            onTouchMove={onTouchMove}
+            onTouchEnd={onTouchEnd}
+        >
             {/* Top Right Controls */}
             <div className="absolute top-4 right-4 z-50 flex items-center gap-4">
                 {hasMetadata && (
@@ -60,21 +94,21 @@ const Lightbox = ({ image, onClose, onNext, onPrev, hasNext, hasPrev }) => {
                 </button>
             </div>
 
-            {/* Navigation Buttons */}
+            {/* Navigation Buttons - Visible on Mobile now */}
             {hasPrev && (
                 <button
                     onClick={(e) => { e.stopPropagation(); onPrev(); }}
-                    className="absolute left-6 top-1/2 -translate-y-1/2 text-white/40 hover:text-white transition-colors p-3 rounded-full hover:bg-white/5 z-50 hidden sm:block"
+                    className="absolute left-2 sm:left-6 top-1/2 -translate-y-1/2 text-white/40 hover:text-white transition-colors p-2 sm:p-3 rounded-full hover:bg-white/5 z-50"
                 >
-                    <ChevronLeft size={42} />
+                    <ChevronLeft size={32} className="sm:w-10 sm:h-10" />
                 </button>
             )}
             {hasNext && (
                 <button
                     onClick={(e) => { e.stopPropagation(); onNext(); }}
-                    className="absolute right-6 top-1/2 -translate-y-1/2 text-white/40 hover:text-white transition-colors p-3 rounded-full hover:bg-white/5 z-50 hidden sm:block"
+                    className="absolute right-2 sm:right-6 top-1/2 -translate-y-1/2 text-white/40 hover:text-white transition-colors p-2 sm:p-3 rounded-full hover:bg-white/5 z-50"
                 >
-                    <ChevronRight size={42} />
+                    <ChevronRight size={32} className="sm:w-10 sm:h-10" />
                 </button>
             )}
 
@@ -89,7 +123,18 @@ const Lightbox = ({ image, onClose, onNext, onPrev, hasNext, hasPrev }) => {
                         transition={{ duration: 0.3, ease: 'easeOut' }}
                         src={image.src}
                         alt={image.alt || 'Full screen photo'}
-                        className="max-h-[85vh] max-w-[95vw] object-contain shadow-[0_25px_50px_-12px_rgba(0,0,0,0.5)] border-[8px] border-white"
+                        className="max-h-[85vh] max-w-[95vw] object-contain shadow-[0_25px_50px_-12px_rgba(0,0,0,0.5)] border-[4px] sm:border-[8px] border-white"
+                        drag="x"
+                        dragConstraints={{ left: 0, right: 0 }}
+                        dragElastic={0.2}
+                        onDragEnd={(e, { offset, velocity }) => {
+                            const swipe = offset.x;
+                            if (swipe < -minSwipeDistance && hasNext) {
+                                onNext();
+                            } else if (swipe > minSwipeDistance && hasPrev) {
+                                onPrev();
+                            }
+                        }}
                     />
                 </AnimatePresence>
 
@@ -100,11 +145,11 @@ const Lightbox = ({ image, onClose, onNext, onPrev, hasNext, hasPrev }) => {
                             initial={{ opacity: 0, y: 10 }}
                             animate={{ opacity: 1, y: 0 }}
                             exit={{ opacity: 0, y: 10 }}
-                            className="absolute bottom-4 left-4 z-50 w-full max-w-xs"
+                            className="absolute bottom-4 left-4 z-50 w-[calc(100%-2rem)] sm:w-full max-w-xs"
                             onClick={(e) => e.stopPropagation()}
                         >
                             <div className="bg-[#1a1a1a] border border-white/10 p-5 rounded-sm text-gray-300 shadow-2xl font-mono text-xs tracking-wide">
-                                <h3 className="text-base font-serif italic text-white mb-2 border-b border-white/10 pb-2">{image.alt}</h3>
+                                <h3 className="text-base font-serif italic text-white mb-2 border-b border-white/10 pb-2 truncate">{image.alt}</h3>
 
                                 <div className="space-y-2">
                                     <div className="flex justify-between">
@@ -115,7 +160,7 @@ const Lightbox = ({ image, onClose, onNext, onPrev, hasNext, hasPrev }) => {
                                     {(meta.cameraMake || meta.cameraModel) && (
                                         <div className="flex justify-between">
                                             <span className="text-gray-500">CAMERA</span>
-                                            <span className="text-white uppercase">{[meta.cameraMake, meta.cameraModel].filter(Boolean).join(' ')}</span>
+                                            <span className="text-white uppercase truncate ml-2">{[meta.cameraMake, meta.cameraModel].filter(Boolean).join(' ')}</span>
                                         </div>
                                     )}
 
