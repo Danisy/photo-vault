@@ -151,13 +151,13 @@ const Gallery = () => {
                             animate={{ opacity: 1 }}
                             transition={{ duration: 0.5, delay: 0.2 }}
                         >
-                            <h2 className="text-xl font-semibold text-white mb-6 flex items-center gap-2 border-b border-gray-800 pb-2">
-                                <ImageIcon className="h-5 w-5 text-purple-400" />
+                            <h2 className="text-2xl font-serif italic text-film-black mb-8 flex items-center gap-3 border-b border-film-black/10 pb-4">
+                                <span className="text-film-red font-normal not-italic text-base font-mono bg-film-paper px-2 py-1 rounded-sm">02</span>
                                 Photos
                             </h2>
 
                             {/* Responsive Layout: Grid for Mobile, Masonry Columns for Desktop */}
-                            <div className="grid grid-cols-2 gap-4 sm:block sm:columns-2 md:columns-3 lg:columns-4 sm:space-y-4">
+                            <div className="grid grid-cols-2 gap-6 sm:block sm:columns-2 md:columns-3 lg:columns-4 sm:space-y-8">
                                 {images.map((photo, index) => {
                                     const imageUrl = getImageUrl(photo.id);
                                     // Determine aspect ratio from metadata
@@ -171,7 +171,7 @@ const Gallery = () => {
                                             initial={{ opacity: 0, y: 20 }}
                                             animate={{ opacity: 1, y: 0 }}
                                             transition={{ duration: 0.5, delay: index * 0.05 }}
-                                            className={`break-inside-avoid bg-gray-800 rounded-lg overflow-hidden cursor-zoom-in group relative shadow-lg mb-4 sm:mb-0
+                                            className={`break-inside-avoid bg-white p-3 shadow-[0_4px_20px_-4px_rgba(0,0,0,0.1)] hover:shadow-[0_8px_30px_-4px_rgba(0,0,0,0.15)] transition-shadow duration-300 ease-in-out cursor-zoom-in group relative mb-6 sm:mb-0
                                                 ${isPortrait ? 'col-span-2' : 'col-span-1'}
                                                 sm:col-span-auto
                                             `}
@@ -182,19 +182,22 @@ const Gallery = () => {
                                                 createdTime: photo.createdTime // Use if available, or rely on EXIF time
                                             })}
                                         >
-                                            <img
-                                                src={imageUrl}
-                                                alt={photo.name}
-                                                loading="lazy"
-                                                className="w-full h-auto object-cover transform transition-transform duration-500 group-hover:scale-105 display-block"
-                                                onError={(e) => {
-                                                    e.target.onerror = null;
-                                                    e.target.src = 'https://placehold.co/400x400/1a1a1a/FFF?text=Error';
-                                                }}
-                                            />
-                                            <div className="absolute inset-0 bg-black/40 opacity-0 group-hover:opacity-100 transition-opacity duration-300 flex items-end p-4">
-                                                <p className="text-white text-xs font-medium truncate w-full bg-black/50 backdrop-blur-md p-2 rounded">
-                                                    {photo.name}
+                                            <div className="overflow-hidden bg-film-paper">
+                                                <img
+                                                    src={imageUrl}
+                                                    alt={photo.name}
+                                                    loading="lazy"
+                                                    className="w-full h-auto object-cover transform transition-transform duration-700 group-hover:scale-[1.02] display-block grayscale-[10%] group-hover:grayscale-0"
+                                                    onError={(e) => {
+                                                        e.target.onerror = null;
+                                                        e.target.src = 'https://placehold.co/400x400/1a1a1a/FFF?text=Error';
+                                                    }}
+                                                />
+                                            </div>
+
+                                            <div className="mt-3 flex justify-between items-center opacity-70 group-hover:opacity-100 transition-opacity">
+                                                <p className="text-xs font-mono text-film-black truncate w-full">
+                                                    {photo.name.replace(/\.[^/.]+$/, "")}
                                                 </p>
                                             </div>
                                         </motion.div>
