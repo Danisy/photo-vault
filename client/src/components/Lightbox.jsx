@@ -2,7 +2,7 @@ import React, { useEffect, useState } from 'react';
 import { X, ChevronLeft, ChevronRight, Info } from 'lucide-react';
 import { motion, AnimatePresence } from 'framer-motion';
 
-const Lightbox = ({ image, onClose, onNext, onPrev, hasNext, hasPrev }) => {
+const Lightbox = ({ image, onClose, onNext, onPrev, hasNext, hasPrev, nextSrc, prevSrc }) => {
     const [showInfo, setShowInfo] = useState(false);
     const [touchStart, setTouchStart] = useState(null);
     const [touchEnd, setTouchEnd] = useState(null);
@@ -33,6 +33,18 @@ const Lightbox = ({ image, onClose, onNext, onPrev, hasNext, hasPrev }) => {
             onPrev();
         }
     };
+
+    // Prefetch Next/Prev Images
+    useEffect(() => {
+        if (nextSrc) {
+            const img = new Image();
+            img.src = nextSrc;
+        }
+        if (prevSrc) {
+            const img = new Image();
+            img.src = prevSrc;
+        }
+    }, [nextSrc, prevSrc]);
 
     useEffect(() => {
         const handleKeyDown = (e) => {

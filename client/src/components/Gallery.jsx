@@ -160,6 +160,11 @@ const Gallery = () => {
                             <div className="grid grid-cols-2 gap-6 sm:block sm:columns-2 md:columns-3 lg:columns-4 sm:space-y-8">
                                 {images.map((photo, index) => {
                                     const imageUrl = getImageUrl(photo.id);
+                                    // Use thumbnail for grid if available, requesting larger size (s500)
+                                    const thumbnailUrl = photo.thumbnailLink
+                                        ? photo.thumbnailLink.replace(/=s\d+$/, '=s500')
+                                        : imageUrl;
+
                                     // Determine aspect ratio from metadata
                                     const width = photo.imageMediaMetadata?.width;
                                     const height = photo.imageMediaMetadata?.height;
@@ -176,21 +181,26 @@ const Gallery = () => {
                                                 sm:col-span-auto
                                             `}
                                             onClick={() => setSelectedPhoto({
-                                                src: imageUrl,
+                                                src: imageUrl, // Full text for Lightbox
                                                 alt: photo.name,
                                                 metadata: photo.imageMediaMetadata,
-                                                createdTime: photo.createdTime // Use if available, or rely on EXIF time
+                                                createdTime: photo.createdTime
                                             })}
                                         >
                                             <div className="overflow-hidden bg-film-paper">
                                                 <img
-                                                    src={imageUrl}
+                                                    src={thumbnailUrl} // Use thumbnail for grid
                                                     alt={photo.name}
                                                     loading="lazy"
                                                     className="w-full h-auto object-cover transform transition-transform duration-700 group-hover:scale-[1.02] display-block grayscale-[10%] group-hover:grayscale-0"
                                                     onError={(e) => {
-                                                        e.target.onerror = null;
-                                                        e.target.src = 'https://placehold.co/400x400/1a1a1a/FFF?text=Error';
+                                                        // Fallback to full image if thumbnail fails
+                                                        if (e.target.src !== imageUrl) {
+                                                            e.target.src = imageUrl;
+                                                        } else {
+                                                            e.target.onerror = null;
+                                                            e.target.src = 'https://placehold.co/400x400/1a1a1a/FFF?text=Error';
+                                                        }
                                                     }}
                                                 />
                                             </div>
@@ -226,6 +236,8 @@ const Gallery = () => {
                     onPrev={handlePrev}
                     hasNext={currentImageIndex < images.length - 1}
                     hasPrev={currentImageIndex > 0}
+                    nextSrc={currentImageIndex < images.length - 1 ? getImageUrl(images[currentImageIndex + 1].id) : null}
+                    prevSrc={currentImageIndex > 0 ? getImageUrl(images[currentImageIndex - 1].id) : null}
                 />
             )}
         </>
