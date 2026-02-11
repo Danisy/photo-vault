@@ -1,8 +1,21 @@
 import React, { useState, useEffect } from 'react';
 import { fetchPhotos, getImageUrl } from '../services/api';
 import Lightbox from './Lightbox';
-import { Loader2, Image as ImageIcon } from 'lucide-react';
+import { Loader2, Image as ImageIcon, ArrowUpDown } from 'lucide-react';
 import { motion } from 'framer-motion';
+
+const getPhotoDate = (photo) => {
+    // Try to get EXIF date first (format often: "YYYY:MM:DD HH:MM:SS")
+    if (photo.imageMediaMetadata?.time) {
+        // Convert colon separated date to standard format for parsing
+        // "2023:01:01 12:00:00" -> "2023/01/01 12:00:00"
+        const exifDate = photo.imageMediaMetadata.time.replace(/^(\d{4}):(\d{2}):(\d{2})/, '$1/$2/$3');
+        const parsed = new Date(exifDate);
+        if (!isNaN(parsed.getTime())) return parsed;
+    }
+    // Fallback to createdTime (ISO string)
+    return new Date(photo.createdTime);
+};
 
 const Gallery = () => {
     const [photos, setPhotos] = useState([]);
@@ -11,6 +24,7 @@ const Gallery = () => {
     const [selectedPhoto, setSelectedPhoto] = useState(null);
     const [currentFolderId, setCurrentFolderId] = useState('');
     const [folderHistory, setFolderHistory] = useState([]);
+    const [sortOrder, setSortOrder] = useState('desc'); // 'desc' = Newest first, 'asc' = Oldest first
 
     useEffect(() => {
         const loadPhotos = async () => {
@@ -64,7 +78,15 @@ const Gallery = () => {
     }
 
     const folders = photos.filter(item => item.mimeType === 'application/vnd.google-apps.folder');
-    const images = photos.filter(item => item.mimeType !== 'application/vnd.google-apps.folder');
+    const rawImages = photos.filter(item => item.mimeType !== 'application/vnd.google-apps.folder');
+
+    const images = React.useMemo(() => {
+        return [...rawImages].sort((a, b) => {
+            const dateA = getPhotoDate(a);
+            const dateB = getPhotoDate(b);
+            return sortOrder === 'desc' ? dateB - dateA : dateA - dateB;
+        });
+    }, [rawImages, sortOrder]);
 
     // Navigation handlers
     const handleNext = () => {
@@ -165,10 +187,19 @@ const Gallery = () => {
                             animate={{ opacity: 1 }}
                             transition={{ duration: 0.5, delay: 0.2 }}
                         >
-                            <h2 className="text-2xl font-serif italic text-film-black mb-8 flex items-center gap-3 border-b border-film-black/10 pb-4">
-                                <span className="text-film-red font-normal not-italic text-base font-mono bg-film-paper px-2 py-1 rounded-sm">02</span>
-                                Photos
-                            </h2>
+                            <div className="flex justify-between items-end mb-8 border-b border-film-black/10 pb-4">
+                                <h2 className="text-2xl font-serif italic text-film-black flex items-center gap-3">
+                                    <span className="text-film-red font-normal not-italic text-base font-mono bg-film-paper px-2 py-1 rounded-sm">02</span>
+                                    Photos
+                                </h2>
+                                <button
+                                    onClick={() => setSortOrder(prev => prev === 'desc' ? 'asc' : 'desc')}
+                                    className="flex items-center gap-2 text-sm font-mono uppercase tracking-widest text-film-black/60 hover:text-film-black transition-colors"
+                                >
+                                    <ArrowUpDown size={14} />
+                                    {sortOrder === 'desc' ? 'Newest First' : 'Oldest First'}
+                                </button>
+                            </div>
 
                             {/* Responsive Layout: Masonry Columns for Mobile and Desktop for gap-less packing */}
                             <div className="columns-2 gap-4 space-y-4 sm:columns-2 sm:gap-6 md:columns-3 lg:columns-4 sm:space-y-8">
