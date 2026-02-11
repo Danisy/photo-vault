@@ -22,7 +22,7 @@ app.use(express.json());
 app.get('/api/photos', async (req, res) => {
     try {
         // Use the folderId from query params OR the default one from env
-        const folderId = req.query.folderId || process.env.DRIVE_FOLDER_ID;
+        const folderId = req.query.folderId || process.env.DRIVE_FOLDER_ID || process.env.GOOGLE_DRIVE_FOLDER_ID;
 
         if (!folderId) {
             return res.status(500).json({ error: 'DRIVE_FOLDER_ID not configured' });
