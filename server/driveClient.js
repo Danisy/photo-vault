@@ -8,16 +8,6 @@ const getDriveClient = () => {
     const client_email = process.env.GOOGLE_CLIENT_EMAIL || process.env.GOOGLE_SERVICE_ACCOUNT_EMAIL;
     const private_key = process.env.GOOGLE_PRIVATE_KEY?.replace(/\\n/g, '\n');
 
-    // DEBUG LOGGING
-    console.log('--- GOOGLE AUTH DEBUG ---');
-    console.log('Client Email:', client_email ? `Set (${client_email.substring(0, 5)}...)` : 'MISSING');
-    console.log('Private Key:', private_key ? `Set (Length: ${private_key.length})` : 'MISSING');
-    if (private_key) {
-        console.log('Private Key starts with:', private_key.substring(0, 20));
-        console.log('Private Key includes BEGIN:', private_key.includes('BEGIN PRIVATE KEY'));
-    }
-    console.log('-------------------------');
-
     if (!client_email || !private_key) {
         console.error('Missing Google Credentials:', {
             hasEmail: !!client_email,
