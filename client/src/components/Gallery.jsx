@@ -5,16 +5,22 @@ import { Loader2, Image as ImageIcon, ArrowUpDown } from 'lucide-react';
 import { motion } from 'framer-motion';
 
 const getPhotoDate = (photo) => {
-    // Try to get EXIF date first (format often: "YYYY:MM:DD HH:MM:SS")
-    if (photo.imageMediaMetadata?.time) {
-        // Convert colon separated date to standard format for parsing
-        // "2023:01:01 12:00:00" -> "2023/01/01 12:00:00"
-        const exifDate = photo.imageMediaMetadata.time.replace(/^(\d{4}):(\d{2}):(\d{2})/, '$1/$2/$3');
-        const parsed = new Date(exifDate);
-        if (!isNaN(parsed.getTime())) return parsed;
+    try {
+        // Try to get EXIF date first (format often: "YYYY:MM:DD HH:MM:SS")
+        if (photo.imageMediaMetadata?.time) {
+            // Convert colon separated date to standard format for parsing
+            // "2023:01:01 12:00:00" -> "2023/01/01 12:00:00"
+            const exifDate = photo.imageMediaMetadata.time.replace(/^(\d{4}):(\d{2}):(\d{2})/, '$1/$2/$3');
+            const parsed = new Date(exifDate);
+            if (!isNaN(parsed.getTime())) return parsed;
+        }
+        // Fallback to createdTime (ISO string)
+        const created = new Date(photo.createdTime);
+        return isNaN(created.getTime()) ? new Date() : created;
+    } catch (e) {
+        console.warn('Error parsing date for photo:', photo.id, e);
+        return new Date();
     }
-    // Fallback to createdTime (ISO string)
-    return new Date(photo.createdTime);
 };
 
 const Gallery = () => {
@@ -103,7 +109,8 @@ const Gallery = () => {
                 src: nextPhoto.thumbnailLink ? nextPhoto.thumbnailLink.replace(/=s\d+$/, '=s3000') : getImageUrl(nextPhoto.id),
                 alt: nextPhoto.name,
                 metadata: nextPhoto.imageMediaMetadata,
-                createdTime: nextPhoto.createdTime
+                createdTime: nextPhoto.createdTime,
+                date: getPhotoDate(nextPhoto)
             });
         }
     };
@@ -121,7 +128,8 @@ const Gallery = () => {
                 src: prevPhoto.thumbnailLink ? prevPhoto.thumbnailLink.replace(/=s\d+$/, '=s3000') : getImageUrl(prevPhoto.id),
                 alt: prevPhoto.name,
                 metadata: prevPhoto.imageMediaMetadata,
-                createdTime: prevPhoto.createdTime
+                createdTime: prevPhoto.createdTime,
+                date: getPhotoDate(prevPhoto)
             });
         }
     };
@@ -232,7 +240,8 @@ const Gallery = () => {
                                                 src: photo.thumbnailLink ? photo.thumbnailLink.replace(/=s\d+$/, '=s3000') : imageUrl, // Use 3000px preview
                                                 alt: photo.name,
                                                 metadata: photo.imageMediaMetadata,
-                                                createdTime: photo.createdTime
+                                                createdTime: photo.createdTime,
+                                                date: getPhotoDate(photo)
                                             })}
                                         >
                                             <div className="overflow-hidden bg-film-paper relative">

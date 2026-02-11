@@ -64,7 +64,13 @@ const Lightbox = ({ image, onClose, onNext, onPrev, hasNext, hasPrev, nextSrc, p
     const hasMetadata = Object.keys(meta).length > 0;
 
     const formatTime = (timeString) => {
-        // Prefer the passed createdTime if available, otherwise check metadata
+        // Prefer the passed date object (parsed EXIF)
+        if (image.date && image.date instanceof Date && !isNaN(image.date)) {
+            return image.date.toLocaleDateString(undefined, {
+                year: 'numeric', month: 'long', day: 'numeric'
+            });
+        }
+        // Fallback to older logic
         const t = image.createdTime || (image.metadata && image.metadata.time);
         if (!t) return 'Unknown Date';
         return new Date(t).toLocaleDateString(undefined, {
