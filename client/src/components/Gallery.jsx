@@ -49,16 +49,16 @@ const Gallery = () => {
         loadPhotos();
     }, [currentFolderId]);
 
+    const [deepLinkChecked, setDeepLinkChecked] = useState(false);
+
     // Handle URL Deep Linking
     useEffect(() => {
         if (photos.length > 0) {
             const params = new URLSearchParams(window.location.search);
             const photoId = params.get('photo');
-            console.log('Deep Linking Debug:', { photoId, totalPhotos: photos.length });
 
             if (photoId && !selectedPhoto) {
                 const photo = photos.find(p => p.id === photoId);
-                console.log('Found photo?', photo);
 
                 if (photo) {
                     const imageUrl = getImageUrl(photo.id);
@@ -72,21 +72,25 @@ const Gallery = () => {
                     });
                 }
             }
+            setDeepLinkChecked(true);
         }
     }, [photos]);
 
     // Update URL when selectedPhoto changes
     useEffect(() => {
+        if (!deepLinkChecked) return;
+
+        const url = new URL(window.location);
         if (selectedPhoto?.id) {
-            const url = new URL(window.location);
             url.searchParams.set('photo', selectedPhoto.id);
-            window.history.pushState({ photoId: selectedPhoto.id }, '', url);
+            window.history.pushState({ photoId: selectedPhoto.id }, '', url.toString());
         } else {
-            const url = new URL(window.location);
-            url.searchParams.delete('photo');
-            window.history.pushState({}, '', url);
+            if (url.searchParams.has('photo')) {
+                url.searchParams.delete('photo');
+                window.history.pushState({}, '', url.toString());
+            }
         }
-    }, [selectedPhoto]);
+    }, [selectedPhoto, deepLinkChecked]);
 
     // Handle Browser Back Button
     useEffect(() => {
