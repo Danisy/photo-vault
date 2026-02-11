@@ -131,15 +131,13 @@ const Lightbox = ({ image, onClose, onNext, onPrev, hasNext, hasPrev, nextSrc, p
                 >
                     {copied ? <Check size={24} /> : <LinkIcon size={24} />}
                 </button>
-                {hasMetadata && (
-                    <button
-                        onClick={() => setShowInfo(!showInfo)}
-                        className={`text-white/80 hover:text-white transition-colors p-3 rounded-full bg-black/20 hover:bg-black/40 backdrop-blur-md ${showInfo ? 'bg-white/20 text-white' : ''}`}
-                        aria-label="View Info"
-                    >
-                        <Info size={24} />
-                    </button>
-                )}
+                <button
+                    onClick={() => setShowInfo(!showInfo)}
+                    className={`text-white/80 hover:text-white transition-colors p-3 rounded-full bg-black/20 hover:bg-black/40 backdrop-blur-md ${showInfo ? 'bg-white/20 text-white' : ''}`}
+                    aria-label="View Info"
+                >
+                    <Info size={24} />
+                </button>
                 <button
                     onClick={onClose}
                     className="text-white/80 hover:text-white transition-colors p-3 rounded-full bg-black/20 hover:bg-black/40 backdrop-blur-md"
@@ -201,7 +199,7 @@ const Lightbox = ({ image, onClose, onNext, onPrev, hasNext, hasPrev, nextSrc, p
 
                 {/* Info Overlay */}
                 <AnimatePresence>
-                    {showInfo && hasMetadata && (
+                    {showInfo && (
                         <motion.div
                             initial={{ opacity: 0, y: 10 }}
                             animate={{ opacity: 1, y: 0 }}
@@ -218,20 +216,22 @@ const Lightbox = ({ image, onClose, onNext, onPrev, hasNext, hasPrev, nextSrc, p
                                         <span className="text-white">{formatTime()}</span>
                                     </div>
 
-                                    {(meta.cameraMake || meta.cameraModel) && (
-                                        <div className="flex justify-between">
-                                            <span className="text-gray-500">CAMERA</span>
-                                            <span className="text-white uppercase truncate ml-2">{[meta.cameraMake, meta.cameraModel].filter(Boolean).join(' ')}</span>
-                                        </div>
-                                    )}
+                                    <div className="flex justify-between">
+                                        <span className="text-gray-500">CAMERA</span>
+                                        <span className="text-white uppercase truncate ml-2">
+                                            {(meta.cameraMake || meta.cameraModel)
+                                                ? [meta.cameraMake, meta.cameraModel].filter(Boolean).join(' ')
+                                                : 'Unknown Camera'}
+                                        </span>
+                                    </div>
 
                                     <div className="flex justify-between">
                                         <span className="text-gray-500">EXPOSURE</span>
                                         <div className="text-right text-white">
-                                            {meta.focalLength && <span>{meta.focalLength}mm </span>}
-                                            {meta.aperture && <span>f/{meta.aperture} </span>}
-                                            {meta.exposureTime && <span>{formatShutterSpeed(meta.exposureTime)} </span>}
-                                            {meta.isoSpeed && <span>ISO{meta.isoSpeed}</span>}
+                                            {meta.focalLength ? <span>{meta.focalLength}mm </span> : <span className="text-gray-600">- </span>}
+                                            {meta.aperture ? <span>f/{meta.aperture} </span> : <span className="text-gray-600">- </span>}
+                                            {meta.exposureTime ? <span>{formatShutterSpeed(meta.exposureTime)} </span> : <span className="text-gray-600">- </span>}
+                                            {meta.isoSpeed ? <span>ISO{meta.isoSpeed}</span> : <span className="text-gray-600">ISO-</span>}
                                         </div>
                                     </div>
                                 </div>

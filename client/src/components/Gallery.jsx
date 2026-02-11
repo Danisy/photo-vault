@@ -165,7 +165,8 @@ const Gallery = () => {
                 alt: nextPhoto.name,
                 metadata: nextPhoto.imageMediaMetadata,
                 createdTime: nextPhoto.createdTime,
-                date: getPhotoDate(nextPhoto)
+                date: getPhotoDate(nextPhoto),
+                id: nextPhoto.id
             });
         }
     };
@@ -174,6 +175,8 @@ const Gallery = () => {
         if (!selectedPhoto) return;
         const currentIndex = images.findIndex(img => {
             const highRes = img.thumbnailLink ? img.thumbnailLink.replace(/=s\d+$/, '=s3000') : getImageUrl(img.id);
+            // Fallback match by ID if src match fails (more robust)
+            if (selectedPhoto.id && img.id === selectedPhoto.id) return true;
             return highRes === selectedPhoto.src || getImageUrl(img.id) === selectedPhoto.src;
         });
 
@@ -184,7 +187,8 @@ const Gallery = () => {
                 alt: prevPhoto.name,
                 metadata: prevPhoto.imageMediaMetadata,
                 createdTime: prevPhoto.createdTime,
-                date: getPhotoDate(prevPhoto)
+                date: getPhotoDate(prevPhoto),
+                id: prevPhoto.id
             });
         }
     };
