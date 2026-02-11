@@ -45,7 +45,7 @@ const Gallery = () => {
     const SkeletonGrid = () => (
         <div className="grid grid-cols-2 md:grid-cols-4 lg:grid-cols-5 gap-4 p-4">
             {Array.from({ length: 10 }).map((_, i) => (
-                <div key={i} className="aspect-square bg-gray-800/50 rounded-lg animate-pulse" />
+                <div key={i} className="aspect-square bg-film-paper rounded-sm animate-pulse" />
             ))}
         </div>
     );
@@ -103,7 +103,7 @@ const Gallery = () => {
                 <div className="p-4 mb-2 container mx-auto">
                     <button
                         onClick={handleBack}
-                        className="flex items-center text-gray-400 hover:text-white transition-colors"
+                        className="flex items-center text-film-gray hover:text-film-black transition-colors font-mono uppercase tracking-widest text-sm"
                     >
                         &larr; Back
                     </button>
@@ -119,8 +119,8 @@ const Gallery = () => {
                             animate={{ opacity: 1, y: 0 }}
                             transition={{ duration: 0.5 }}
                         >
-                            <h2 className="text-xl font-semibold text-white mb-6 flex items-center gap-2 border-b border-gray-800 pb-2">
-                                <svg xmlns="http://www.w3.org/2000/svg" className="h-5 w-5 text-blue-400" viewBox="0 0 20 20" fill="currentColor">
+                            <h2 className="text-xl font-serif italic text-film-black mb-6 flex items-center gap-2 border-b border-film-black/10 pb-2">
+                                <svg xmlns="http://www.w3.org/2000/svg" className="h-5 w-5 text-film-black/50" viewBox="0 0 20 20" fill="currentColor">
                                     <path d="M2 6a2 2 0 012-2h5l2 2h5a2 2 0 012 2v6a2 2 0 01-2 2H4a2 2 0 01-2-2V6z" />
                                 </svg>
                                 Folders
@@ -129,15 +129,15 @@ const Gallery = () => {
                                 {folders.map((folder) => (
                                     <motion.div
                                         key={folder.id}
-                                        whileHover={{ scale: 1.05, backgroundColor: 'rgba(55, 65, 81, 1)' }}
+                                        whileHover={{ scale: 1.05 }}
                                         whileTap={{ scale: 0.95 }}
-                                        className="aspect-[4/3] bg-gray-800/50 backdrop-blur-sm rounded-xl flex flex-col items-center justify-center cursor-pointer border border-white/5 hover:border-blue-500/30 transition-colors group"
+                                        className="aspect-[4/3] bg-film-paper rounded-sm flex flex-col items-center justify-center cursor-pointer border border-film-black/10 hover:border-film-black/30 transition-colors group shadow-sm"
                                         onClick={() => handleFolderClick(folder.id, folder.name)}
                                     >
-                                        <svg xmlns="http://www.w3.org/2000/svg" className="h-12 w-12 text-blue-400/80 group-hover:text-blue-400 mb-3 transition-colors" viewBox="0 0 20 20" fill="currentColor">
+                                        <svg xmlns="http://www.w3.org/2000/svg" className="h-12 w-12 text-film-black/20 group-hover:text-film-black/50 mb-3 transition-colors" viewBox="0 0 20 20" fill="currentColor">
                                             <path d="M2 6a2 2 0 012-2h5l2 2h5a2 2 0 012 2v6a2 2 0 01-2 2H4a2 2 0 01-2-2V6z" />
                                         </svg>
-                                        <p className="text-gray-300 group-hover:text-white text-sm font-medium px-2 text-center truncate w-full">{folder.name}</p>
+                                        <p className="text-film-black/70 group-hover:text-film-black text-sm font-mono px-2 text-center truncate w-full">{folder.name}</p>
                                     </motion.div>
                                 ))}
                             </div>

@@ -4,7 +4,7 @@ import Hero from './components/Hero';
 
 function App() {
   return (
-    <div className="min-h-screen bg-[#0a0a0a] text-white font-sans selection:bg-blue-500/30">
+    <div className="min-h-screen text-film-black font-sans selection:bg-film-red selection:text-white">
 
       <Hero />
 
