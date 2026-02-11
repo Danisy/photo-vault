@@ -1,10 +1,11 @@
-import React, { useEffect, useState } from 'react';
-import { X, ChevronLeft, ChevronRight, Info, Play, Pause } from 'lucide-react';
+import React, { useState, useEffect } from 'react';
+import { X, ChevronLeft, ChevronRight, Info, Play, Pause, Link as LinkIcon, Check } from 'lucide-react';
 import { motion, AnimatePresence } from 'framer-motion';
 
 const Lightbox = ({ image, onClose, onNext, onPrev, hasNext, hasPrev, nextSrc, prevSrc }) => {
     const [showInfo, setShowInfo] = useState(false);
     const [isPlaying, setIsPlaying] = useState(false);
+    const [copied, setCopied] = useState(false);
     const [touchStart, setTouchStart] = useState(null);
     const [touchEnd, setTouchEnd] = useState(null);
 
@@ -20,6 +21,12 @@ const Lightbox = ({ image, onClose, onNext, onPrev, hasNext, hasPrev, nextSrc, p
         }
         return () => clearInterval(interval);
     }, [isPlaying, hasNext, onNext]);
+
+    const handleCopyLink = () => {
+        navigator.clipboard.writeText(window.location.href);
+        setCopied(true);
+        setTimeout(() => setCopied(false), 2000);
+    };
 
     // Minimum swipe distance (in px)
 
@@ -116,6 +123,13 @@ const Lightbox = ({ image, onClose, onNext, onPrev, hasNext, hasPrev, nextSrc, p
                     aria-label={isPlaying ? "Pause Slideshow" : "Play Slideshow"}
                 >
                     {isPlaying ? <Pause size={24} /> : <Play size={24} />}
+                </button>
+                <button
+                    onClick={handleCopyLink}
+                    className={`text-white/80 hover:text-white transition-colors p-3 rounded-full bg-black/20 hover:bg-black/40 backdrop-blur-md ${copied ? 'bg-green-500/20 text-green-400' : ''}`}
+                    aria-label="Copy Link"
+                >
+                    {copied ? <Check size={24} /> : <LinkIcon size={24} />}
                 </button>
                 {hasMetadata && (
                     <button

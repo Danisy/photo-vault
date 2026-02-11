@@ -49,6 +49,56 @@ const Gallery = () => {
         loadPhotos();
     }, [currentFolderId]);
 
+    // Handle URL Deep Linking
+    useEffect(() => {
+        if (photos.length > 0) {
+            const params = new URLSearchParams(window.location.search);
+            const photoId = params.get('photo');
+            console.log('Deep Linking Debug:', { photoId, totalPhotos: photos.length });
+
+            if (photoId && !selectedPhoto) {
+                const photo = photos.find(p => p.id === photoId);
+                console.log('Found photo?', photo);
+
+                if (photo) {
+                    const imageUrl = getImageUrl(photo.id);
+                    setSelectedPhoto({
+                        src: photo.thumbnailLink ? photo.thumbnailLink.replace(/=s\d+$/, '=s3000') : imageUrl,
+                        alt: photo.name,
+                        metadata: photo.imageMediaMetadata,
+                        createdTime: photo.createdTime,
+                        date: getPhotoDate(photo),
+                        id: photo.id // Ensure ID is passed
+                    });
+                }
+            }
+        }
+    }, [photos]);
+
+    // Update URL when selectedPhoto changes
+    useEffect(() => {
+        if (selectedPhoto?.id) {
+            const url = new URL(window.location);
+            url.searchParams.set('photo', selectedPhoto.id);
+            window.history.pushState({ photoId: selectedPhoto.id }, '', url);
+        } else {
+            const url = new URL(window.location);
+            url.searchParams.delete('photo');
+            window.history.pushState({}, '', url);
+        }
+    }, [selectedPhoto]);
+
+    // Handle Browser Back Button
+    useEffect(() => {
+        const handlePopState = (event) => {
+            if (!event.state?.photoId) {
+                setSelectedPhoto(null);
+            }
+        };
+        window.addEventListener('popstate', handlePopState);
+        return () => window.removeEventListener('popstate', handlePopState);
+    }, []);
+
     const handleFolderClick = (folderId, folderName) => {
         setFolderHistory((prev) => [...prev, { id: currentFolderId, name: folderName }]);
         setCurrentFolderId(folderId);
@@ -274,7 +324,8 @@ const Gallery = () => {
                                                             alt: photo.name,
                                                             metadata: photo.imageMediaMetadata,
                                                             createdTime: photo.createdTime,
-                                                            date: getPhotoDate(photo)
+                                                            date: getPhotoDate(photo),
+                                                            id: photo.id
                                                         })}
                                                     >
                                                         <div className="overflow-hidden bg-film-paper relative">
