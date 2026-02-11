@@ -1,11 +1,27 @@
 import React, { useEffect, useState } from 'react';
-import { X, ChevronLeft, ChevronRight, Info } from 'lucide-react';
+import { X, ChevronLeft, ChevronRight, Info, Play, Pause } from 'lucide-react';
 import { motion, AnimatePresence } from 'framer-motion';
 
 const Lightbox = ({ image, onClose, onNext, onPrev, hasNext, hasPrev, nextSrc, prevSrc }) => {
     const [showInfo, setShowInfo] = useState(false);
+    const [isPlaying, setIsPlaying] = useState(false);
     const [touchStart, setTouchStart] = useState(null);
     const [touchEnd, setTouchEnd] = useState(null);
+
+    // Auto Slideshow Timer
+    useEffect(() => {
+        let interval;
+        if (isPlaying && hasNext) {
+            interval = setInterval(() => {
+                onNext();
+            }, 3000); // 3 seconds per slide
+        } else if (!hasNext) {
+            setIsPlaying(false); // Stop if end of gallery
+        }
+        return () => clearInterval(interval);
+    }, [isPlaying, hasNext, onNext]);
+
+    // Minimum swipe distance (in px)
 
     // Minimum swipe distance (in px)
     const minSwipeDistance = 50;
@@ -94,6 +110,13 @@ const Lightbox = ({ image, onClose, onNext, onPrev, hasNext, hasPrev, nextSrc, p
         >
             {/* Top Right Controls */}
             <div className="absolute top-4 right-4 z-[110] flex items-center gap-4">
+                <button
+                    onClick={() => setIsPlaying(!isPlaying)}
+                    className={`text-white/80 hover:text-white transition-colors p-3 rounded-full bg-black/20 hover:bg-black/40 backdrop-blur-md ${isPlaying ? 'bg-film-red/80 text-white' : ''}`}
+                    aria-label={isPlaying ? "Pause Slideshow" : "Play Slideshow"}
+                >
+                    {isPlaying ? <Pause size={24} /> : <Play size={24} />}
+                </button>
                 {hasMetadata && (
                     <button
                         onClick={() => setShowInfo(!showInfo)}
