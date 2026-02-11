@@ -1,6 +1,7 @@
 import axios from 'axios';
 
 const API_Base = import.meta.env.VITE_API_URL || 'http://localhost:3001/api';
+console.log('Client configured to talk to:', API_Base);
 
 export const fetchPhotos = async (folderId = '') => {
     try {
