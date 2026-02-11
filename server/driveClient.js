@@ -36,7 +36,7 @@ const listImages = async (folderId) => {
     try {
         const res = await drive.files.list({
             q: `'${folderId}' in parents and (mimeType contains 'image/' or mimeType = 'application/vnd.google-apps.folder') and trashed = false`,
-            fields: 'files(id, name, mimeType, thumbnailLink, webContentLink, imageMediaMetadata)',
+            fields: 'files(id, name, mimeType, thumbnailLink, webContentLink, imageMediaMetadata, createdTime)',
             pageSize: 100, // Adjust as needed
             orderBy: 'folder, name', // Folders first, then by name
         });

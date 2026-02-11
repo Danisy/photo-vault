@@ -23,10 +23,19 @@ const Lightbox = ({ image, onClose, onNext, onPrev, hasNext, hasPrev }) => {
     const hasMetadata = Object.keys(meta).length > 0;
 
     const formatTime = (timeString) => {
-        if (!timeString) return '';
-        return new Date(timeString).toLocaleDateString(undefined, {
+        // Prefer the passed createdTime if available, otherwise check metadata
+        const t = image.createdTime || (image.metadata && image.metadata.time);
+        if (!t) return 'Unknown Date';
+        return new Date(t).toLocaleDateString(undefined, {
             year: 'numeric', month: 'long', day: 'numeric'
         });
+    };
+
+    const formatShutterSpeed = (exposureTime) => {
+        if (!exposureTime) return '';
+        if (exposureTime >= 1) return `${exposureTime}s`;
+        const denominator = Math.round(1 / exposureTime);
+        return `1/${denominator}s`;
     };
 
     return (
@@ -96,7 +105,7 @@ const Lightbox = ({ image, onClose, onNext, onPrev, hasNext, hasPrev }) => {
                         >
                             <div className="bg-black/60 backdrop-blur-xl border border-white/10 p-6 rounded-2xl text-white shadow-2xl">
                                 <h3 className="text-xl font-semibold mb-1">{image.alt}</h3>
-                                <p className="text-gray-400 text-sm mb-4">{formatTime(meta.time)}</p>
+                                <p className="text-gray-400 text-sm mb-4">{formatTime()}</p>
 
                                 <div className="space-y-3 text-sm">
                                     {/* Camera Model */}
@@ -113,7 +122,7 @@ const Lightbox = ({ image, onClose, onNext, onPrev, hasNext, hasPrev }) => {
                                         <div className="text-right font-medium">
                                             {meta.focalLength && <span>{meta.focalLength}mm </span>}
                                             {meta.aperture && <span>f/{meta.aperture} </span>}
-                                            {meta.exposureTime && <span>{meta.exposureTime}s </span>}
+                                            {meta.exposureTime && <span>{formatShutterSpeed(meta.exposureTime)} </span>}
                                             {meta.isoSpeed && <span>ISO{meta.isoSpeed}</span>}
                                         </div>
                                     </div>
