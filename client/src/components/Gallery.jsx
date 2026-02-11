@@ -323,10 +323,7 @@ const Gallery = () => {
                                                         initial={{ opacity: 0, y: 20 }}
                                                         animate={{ opacity: 1, y: 0 }}
                                                         transition={{ duration: 0.5, delay: index * 0.05 }}
-                                                        className={`break-inside-avoid bg-white p-3 shadow-[0_4px_20px_-4px_rgba(0,0,0,0.1)] hover:shadow-[0_8px_30px_-4px_rgba(0,0,0,0.15)] transition-shadow duration-300 ease-in-out cursor-zoom-in group relative mb-4 sm:mb-0
-                                                col-span-1
-                                                sm:col-span-auto
-                                            `}
+                                                        className={`break-inside-avoid inline-block w-full bg-white p-3 shadow-[0_4px_20px_-4px_rgba(0,0,0,0.1)] hover:shadow-[0_8px_30px_-4px_rgba(0,0,0,0.15)] transition-shadow duration-300 ease-in-out cursor-zoom-in group relative mb-4 sm:mb-0`}
                                                         onClick={() => setSelectedPhoto({
                                                             src: photo.thumbnailLink ? photo.thumbnailLink.replace(/=s\d+$/, '=s3000') : imageUrl, // Use 3000px preview
                                                             alt: photo.name,
