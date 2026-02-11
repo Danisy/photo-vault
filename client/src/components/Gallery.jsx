@@ -72,7 +72,11 @@ const Gallery = () => {
         const currentIndex = images.findIndex(img => getImageUrl(img.id) === selectedPhoto.src);
         if (currentIndex < images.length - 1) {
             const nextPhoto = images[currentIndex + 1];
-            setSelectedPhoto({ src: getImageUrl(nextPhoto.id), alt: nextPhoto.name });
+            setSelectedPhoto({
+                src: getImageUrl(nextPhoto.id),
+                alt: nextPhoto.name,
+                metadata: nextPhoto.imageMediaMetadata
+            });
         }
     };
 
@@ -81,7 +85,11 @@ const Gallery = () => {
         const currentIndex = images.findIndex(img => getImageUrl(img.id) === selectedPhoto.src);
         if (currentIndex > 0) {
             const prevPhoto = images[currentIndex - 1];
-            setSelectedPhoto({ src: getImageUrl(prevPhoto.id), alt: prevPhoto.name });
+            setSelectedPhoto({
+                src: getImageUrl(prevPhoto.id),
+                alt: prevPhoto.name,
+                metadata: prevPhoto.imageMediaMetadata
+            });
         }
     };
 
@@ -167,7 +175,12 @@ const Gallery = () => {
                                                 ${isPortrait ? 'col-span-2' : 'col-span-1'}
                                                 sm:col-span-auto
                                             `}
-                                            onClick={() => setSelectedPhoto({ src: imageUrl, alt: photo.name })}
+                                            onClick={() => setSelectedPhoto({
+                                                src: imageUrl,
+                                                alt: photo.name,
+                                                metadata: photo.imageMediaMetadata,
+                                                createdTime: photo.createdTime // Use if available, or rely on EXIF time
+                                            })}
                                         >
                                             <img
                                                 src={imageUrl}
