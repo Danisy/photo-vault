@@ -1,7 +1,7 @@
 import React, { useState, useEffect } from 'react';
 import { fetchPhotos, getImageUrl } from '../services/api';
 import Lightbox from './Lightbox';
-import { Loader2, Image as ImageIcon, ArrowUpDown } from 'lucide-react';
+import { Loader2, Image as ImageIcon, ArrowUpDown, GripHorizontal, LayoutGrid, Grid3x3 } from 'lucide-react';
 import { motion } from 'framer-motion';
 
 const getPhotoDate = (photo) => {
@@ -31,6 +31,7 @@ const Gallery = () => {
     const [currentFolderId, setCurrentFolderId] = useState('');
     const [folderHistory, setFolderHistory] = useState([]);
     const [sortOrder, setSortOrder] = useState('desc'); // 'desc' = Newest first, 'asc' = Oldest first
+    const [gridDensity, setGridDensity] = useState('medium'); // 'low', 'medium', 'high'
 
     useEffect(() => {
         const loadPhotos = async () => {
@@ -207,78 +208,112 @@ const Gallery = () => {
                                     <ArrowUpDown size={14} />
                                     {sortOrder === 'desc' ? 'Newest First' : 'Oldest First'}
                                 </button>
+                                <div className="h-4 w-px bg-film-black/20 mx-2 hidden sm:block"></div>
+                                {/* Grid Toggle Controls */}
+                                <div className="flex items-center gap-1 bg-film-paper border border-film-black/10 rounded-sm p-1">
+                                    <button
+                                        onClick={() => setGridDensity('low')}
+                                        className={`p-1.5 rounded-sm transition-colors ${gridDensity === 'low' ? 'bg-film-black text-film-cream' : 'text-film-black/40 hover:text-film-black'}`}
+                                        title="Cozy View"
+                                    >
+                                        <GripHorizontal size={14} />
+                                    </button>
+                                    <button
+                                        onClick={() => setGridDensity('medium')}
+                                        className={`p-1.5 rounded-sm transition-colors ${gridDensity === 'medium' ? 'bg-film-black text-film-cream' : 'text-film-black/40 hover:text-film-black'}`}
+                                        title="Standard View"
+                                    >
+                                        <LayoutGrid size={14} />
+                                    </button>
+                                    <button
+                                        onClick={() => setGridDensity('high')}
+                                        className={`p-1.5 rounded-sm transition-colors ${gridDensity === 'high' ? 'bg-film-black text-film-cream' : 'text-film-black/40 hover:text-film-black'}`}
+                                        title="Compact View"
+                                    >
+                                        <Grid3x3 size={14} />
+                                    </button>
+                                </div>
                             </div>
 
-                            {/* Responsive Layout: Masonry Columns for Mobile and Desktop for gap-less packing */}
-                            <div className="columns-2 gap-4 space-y-4 sm:columns-2 sm:gap-6 md:columns-3 lg:columns-4 sm:space-y-8">
-                                {images.map((photo, index) => {
-                                    const imageUrl = getImageUrl(photo.id);
-                                    // Use thumbnail for grid if available, requesting larger size (s500)
-                                    const thumbnailUrl = photo.thumbnailLink
-                                        ? photo.thumbnailLink.replace(/=s\d+$/, '=s500')
-                                        : imageUrl;
-
-                                    // Determine aspect ratio from metadata
-                                    const width = photo.imageMediaMetadata?.width;
-                                    const height = photo.imageMediaMetadata?.height;
-                                    const isPortrait = height && width ? height > width : false;
-
-                                    // Format simple EXIF string
-                                    const exifString = `${photo.imageMediaMetadata?.cameraMake || ''} ${photo.imageMediaMetadata?.cameraModel || ''} • ISO ${photo.imageMediaMetadata?.isoSpeed || '-'} • f/${photo.imageMediaMetadata?.aperture || '-'}`;
-
+                            {/* Responsive Layout: Masonry Columns based on Density */
+                                (() => {
+                                    const columnClasses = {
+                                        low: 'columns-1 sm:columns-2 lg:columns-2 gap-8 space-y-8',
+                                        medium: 'columns-2 sm:columns-2 md:columns-3 lg:columns-4 gap-4 sm:gap-6 space-y-4 sm:space-y-6',
+                                        high: 'columns-3 sm:columns-4 md:columns-5 lg:columns-6 gap-2 space-y-2'
+                                    };
                                     return (
-                                        <motion.div
-                                            key={photo.id}
-                                            initial={{ opacity: 0, y: 20 }}
-                                            animate={{ opacity: 1, y: 0 }}
-                                            transition={{ duration: 0.5, delay: index * 0.05 }}
-                                            className={`break-inside-avoid bg-white p-3 shadow-[0_4px_20px_-4px_rgba(0,0,0,0.1)] hover:shadow-[0_8px_30px_-4px_rgba(0,0,0,0.15)] transition-shadow duration-300 ease-in-out cursor-zoom-in group relative mb-4 sm:mb-0
+                                        <div className={columnClasses[gridDensity]}>
+                                            {images.map((photo, index) => {
+                                                const imageUrl = getImageUrl(photo.id);
+                                                // Use thumbnail for grid if available, requesting larger size (s500)
+                                                const thumbnailUrl = photo.thumbnailLink
+                                                    ? photo.thumbnailLink.replace(/=s\d+$/, '=s500')
+                                                    : imageUrl;
+
+                                                // Determine aspect ratio from metadata
+                                                const width = photo.imageMediaMetadata?.width;
+                                                const height = photo.imageMediaMetadata?.height;
+                                                const isPortrait = height && width ? height > width : false;
+
+                                                // Format simple EXIF string
+                                                const exifString = `${photo.imageMediaMetadata?.cameraMake || ''} ${photo.imageMediaMetadata?.cameraModel || ''} • ISO ${photo.imageMediaMetadata?.isoSpeed || '-'} • f/${photo.imageMediaMetadata?.aperture || '-'}`;
+
+                                                return (
+                                                    <motion.div
+                                                        key={photo.id}
+                                                        initial={{ opacity: 0, y: 20 }}
+                                                        animate={{ opacity: 1, y: 0 }}
+                                                        transition={{ duration: 0.5, delay: index * 0.05 }}
+                                                        className={`break-inside-avoid bg-white p-3 shadow-[0_4px_20px_-4px_rgba(0,0,0,0.1)] hover:shadow-[0_8px_30px_-4px_rgba(0,0,0,0.15)] transition-shadow duration-300 ease-in-out cursor-zoom-in group relative mb-4 sm:mb-0
                                                 col-span-1
                                                 sm:col-span-auto
                                             `}
-                                            onClick={() => setSelectedPhoto({
-                                                src: photo.thumbnailLink ? photo.thumbnailLink.replace(/=s\d+$/, '=s3000') : imageUrl, // Use 3000px preview
-                                                alt: photo.name,
-                                                metadata: photo.imageMediaMetadata,
-                                                createdTime: photo.createdTime,
-                                                date: getPhotoDate(photo)
+                                                        onClick={() => setSelectedPhoto({
+                                                            src: photo.thumbnailLink ? photo.thumbnailLink.replace(/=s\d+$/, '=s3000') : imageUrl, // Use 3000px preview
+                                                            alt: photo.name,
+                                                            metadata: photo.imageMediaMetadata,
+                                                            createdTime: photo.createdTime,
+                                                            date: getPhotoDate(photo)
+                                                        })}
+                                                    >
+                                                        <div className="overflow-hidden bg-film-paper relative">
+                                                            <img
+                                                                src={thumbnailUrl} // Use thumbnail for grid
+                                                                alt={photo.name}
+                                                                loading="lazy"
+                                                                className="w-full h-auto object-cover transform transition-transform duration-700 group-hover:scale-[1.02] display-block grayscale-[10%] group-hover:grayscale-0"
+                                                                onError={(e) => {
+                                                                    // Fallback to full image if thumbnail fails
+                                                                    if (e.target.src !== imageUrl) {
+                                                                        e.target.src = imageUrl;
+                                                                    } else {
+                                                                        e.target.onerror = null;
+                                                                        e.target.src = 'https://placehold.co/400x400/1a1a1a/FFF?text=Error';
+                                                                    }
+                                                                }}
+                                                            />
+
+                                                            {/* Film Strip EXIF Overlay */}
+                                                            <div className="absolute inset-0 bg-black/40 opacity-0 group-hover:opacity-100 transition-opacity duration-300 flex items-end p-4">
+                                                                <div className="text-white/90 font-mono text-[10px] tracking-widest uppercase border-l-2 border-film-red pl-2">
+                                                                    <p>{exifString}</p>
+                                                                    <p className="opacity-70">{getPhotoDate(photo).toISOString().split('T')[0]}</p>
+                                                                </div>
+                                                            </div>
+                                                        </div>
+
+                                                        <div className="mt-3 flex justify-between items-center opacity-70 group-hover:opacity-100 transition-opacity">
+                                                            <p className="text-xs font-mono text-film-black truncate w-full">
+                                                                {photo.name.replace(/\.[^/.]+$/, "")}
+                                                            </p>
+                                                        </div>
+                                                    </motion.div>
+                                                );
                                             })}
-                                        >
-                                            <div className="overflow-hidden bg-film-paper relative">
-                                                <img
-                                                    src={thumbnailUrl} // Use thumbnail for grid
-                                                    alt={photo.name}
-                                                    loading="lazy"
-                                                    className="w-full h-auto object-cover transform transition-transform duration-700 group-hover:scale-[1.02] display-block grayscale-[10%] group-hover:grayscale-0"
-                                                    onError={(e) => {
-                                                        // Fallback to full image if thumbnail fails
-                                                        if (e.target.src !== imageUrl) {
-                                                            e.target.src = imageUrl;
-                                                        } else {
-                                                            e.target.onerror = null;
-                                                            e.target.src = 'https://placehold.co/400x400/1a1a1a/FFF?text=Error';
-                                                        }
-                                                    }}
-                                                />
-
-                                                {/* Film Strip EXIF Overlay */}
-                                                <div className="absolute inset-0 bg-black/40 opacity-0 group-hover:opacity-100 transition-opacity duration-300 flex items-end p-4">
-                                                    <div className="text-white/90 font-mono text-[10px] tracking-widest uppercase border-l-2 border-film-red pl-2">
-                                                        <p>{exifString}</p>
-                                                        <p className="opacity-70">{getPhotoDate(photo).toISOString().split('T')[0]}</p>
-                                                    </div>
-                                                </div>
-                                            </div>
-
-                                            <div className="mt-3 flex justify-between items-center opacity-70 group-hover:opacity-100 transition-opacity">
-                                                <p className="text-xs font-mono text-film-black truncate w-full">
-                                                    {photo.name.replace(/\.[^/.]+$/, "")}
-                                                </p>
-                                            </div>
-                                        </motion.div>
+                                        </div>
                                     );
-                                })}
-                            </div>
+                                })()}
                         </motion.section>
                     )}
 
