@@ -170,8 +170,8 @@ const Gallery = () => {
                                 Photos
                             </h2>
 
-                            {/* Responsive Layout: Grid for Mobile, Masonry Columns for Desktop */}
-                            <div className="grid grid-cols-2 gap-6 sm:block sm:columns-2 md:columns-3 lg:columns-4 sm:space-y-8">
+                            {/* Responsive Layout: Masonry Columns for Mobile and Desktop for gap-less packing */}
+                            <div className="columns-2 gap-4 space-y-4 sm:columns-2 sm:gap-6 md:columns-3 lg:columns-4 sm:space-y-8">
                                 {images.map((photo, index) => {
                                     const imageUrl = getImageUrl(photo.id);
                                     // Use thumbnail for grid if available, requesting larger size (s500)
@@ -193,8 +193,8 @@ const Gallery = () => {
                                             initial={{ opacity: 0, y: 20 }}
                                             animate={{ opacity: 1, y: 0 }}
                                             transition={{ duration: 0.5, delay: index * 0.05 }}
-                                            className={`break-inside-avoid bg-white p-3 shadow-[0_4px_20px_-4px_rgba(0,0,0,0.1)] hover:shadow-[0_8px_30px_-4px_rgba(0,0,0,0.15)] transition-shadow duration-300 ease-in-out cursor-zoom-in group relative mb-6 sm:mb-0
-                                                ${isPortrait ? 'col-span-2' : 'col-span-1'}
+                                            className={`break-inside-avoid bg-white p-3 shadow-[0_4px_20px_-4px_rgba(0,0,0,0.1)] hover:shadow-[0_8px_30px_-4px_rgba(0,0,0,0.15)] transition-shadow duration-300 ease-in-out cursor-zoom-in group relative mb-4 sm:mb-0
+                                                col-span-1
                                                 sm:col-span-auto
                                             `}
                                             onClick={() => setSelectedPhoto({

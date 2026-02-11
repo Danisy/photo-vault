@@ -87,11 +87,11 @@ const Lightbox = ({ image, onClose, onNext, onPrev, hasNext, hasPrev, nextSrc, p
             onTouchEnd={onTouchEnd}
         >
             {/* Top Right Controls */}
-            <div className="absolute top-4 right-4 z-50 flex items-center gap-4">
+            <div className="absolute top-4 right-4 z-[110] flex items-center gap-4">
                 {hasMetadata && (
                     <button
                         onClick={() => setShowInfo(!showInfo)}
-                        className={`text-white/60 hover:text-white transition-colors p-2 rounded-full ${showInfo ? 'bg-white/10 text-white' : ''}`}
+                        className={`text-white/80 hover:text-white transition-colors p-3 rounded-full bg-black/20 hover:bg-black/40 backdrop-blur-md ${showInfo ? 'bg-white/20 text-white' : ''}`}
                         aria-label="View Info"
                     >
                         <Info size={24} />
@@ -99,7 +99,7 @@ const Lightbox = ({ image, onClose, onNext, onPrev, hasNext, hasPrev, nextSrc, p
                 )}
                 <button
                     onClick={onClose}
-                    className="text-white/60 hover:text-white transition-colors p-2"
+                    className="text-white/80 hover:text-white transition-colors p-3 rounded-full bg-black/20 hover:bg-black/40 backdrop-blur-md"
                     aria-label="Close"
                 >
                     <X size={28} />

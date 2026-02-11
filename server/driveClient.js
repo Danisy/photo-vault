@@ -40,7 +40,9 @@ const listImages = async (folderId) => {
             pageSize: 100, // Adjust as needed
             orderBy: 'folder, name', // Folders first, then by name
         });
-        return res.data.files;
+
+        const files = res.data.files;
+        return files;
     } catch (error) {
         console.error('Error listing files from Google Drive:', error);
         throw error;
