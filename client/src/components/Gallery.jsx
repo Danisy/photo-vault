@@ -148,24 +148,32 @@ const Gallery = () => {
                                 Photos
                             </h2>
 
-                            {/* CSS Columns Masonry */}
-                            <div className="columns-1 sm:columns-2 md:columns-3 lg:columns-4 gap-4 space-y-4">
+                            {/* Responsive Layout: Grid for Mobile, Masonry Columns for Desktop */}
+                            <div className="grid grid-cols-2 gap-4 sm:block sm:columns-2 md:columns-3 lg:columns-4 sm:space-y-4">
                                 {images.map((photo, index) => {
                                     const imageUrl = getImageUrl(photo.id);
+                                    // Determine aspect ratio from metadata
+                                    const width = photo.imageMediaMetadata?.width;
+                                    const height = photo.imageMediaMetadata?.height;
+                                    const isPortrait = height && width ? height > width : false;
+
                                     return (
                                         <motion.div
                                             key={photo.id}
                                             initial={{ opacity: 0, y: 20 }}
                                             animate={{ opacity: 1, y: 0 }}
                                             transition={{ duration: 0.5, delay: index * 0.05 }}
-                                            className="break-inside-avoid bg-gray-800 rounded-lg overflow-hidden cursor-zoom-in group relative shadow-lg"
+                                            className={`break-inside-avoid bg-gray-800 rounded-lg overflow-hidden cursor-zoom-in group relative shadow-lg mb-4 sm:mb-0
+                                                ${isPortrait ? 'col-span-2 aspect-[3/4]' : 'col-span-1 aspect-square'}
+                                                sm:col-span-auto sm:aspect-auto
+                                            `}
                                             onClick={() => setSelectedPhoto({ src: imageUrl, alt: photo.name })}
                                         >
                                             <img
                                                 src={imageUrl}
                                                 alt={photo.name}
                                                 loading="lazy"
-                                                className="w-full h-auto object-cover transform transition-transform duration-500 group-hover:scale-105"
+                                                className="w-full h-full object-cover transform transition-transform duration-500 group-hover:scale-105"
                                                 onError={(e) => {
                                                     e.target.onerror = null;
                                                     e.target.src = 'https://placehold.co/400x400/1a1a1a/FFF?text=Error';
