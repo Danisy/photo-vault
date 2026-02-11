@@ -127,27 +127,33 @@ const Lightbox = ({ image, onClose, onNext, onPrev, hasNext, hasPrev, nextSrc, p
             {/* Image Container */}
             <div className="relative max-w-full max-h-full flex items-center justify-center w-full h-full" onClick={(e) => { e.stopPropagation(); setShowInfo(false); }}>
                 <AnimatePresence mode="wait">
-                    <motion.img
+                    <motion.div
                         key={image.src}
+                        className="relative max-h-[85vh] max-w-[95vw] w-auto h-auto"
                         initial={{ opacity: 0, scale: 0.98 }}
                         animate={{ opacity: 1, scale: 1 }}
                         exit={{ opacity: 0, scale: 0.98 }}
                         transition={{ duration: 0.3, ease: 'easeOut' }}
-                        src={image.src}
-                        alt={image.alt || 'Full screen photo'}
-                        className="max-h-[85vh] max-w-[95vw] object-contain shadow-[0_25px_50px_-12px_rgba(0,0,0,0.5)] border-[4px] sm:border-[8px] border-white"
-                        drag="x"
-                        dragConstraints={{ left: 0, right: 0 }}
-                        dragElastic={0.2}
-                        onDragEnd={(e, { offset, velocity }) => {
-                            const swipe = offset.x;
-                            if (swipe < -minSwipeDistance && hasNext) {
-                                onNext();
-                            } else if (swipe > minSwipeDistance && hasPrev) {
-                                onPrev();
-                            }
-                        }}
-                    />
+                    >
+                        {/* Placeholder / Low Res (Optional) - layout specific */}
+
+                        <motion.img
+                            src={image.src}
+                            alt={image.alt || 'Full screen photo'}
+                            className="max-h-[85vh] max-w-[95vw] object-contain shadow-[0_25px_50px_-12px_rgba(0,0,0,0.5)] border-[4px] sm:border-[8px] border-white"
+                            drag="x"
+                            dragConstraints={{ left: 0, right: 0 }}
+                            dragElastic={0.2}
+                            onDragEnd={(e, { offset, velocity }) => {
+                                const swipe = offset.x;
+                                if (swipe < -minSwipeDistance && hasNext) {
+                                    onNext();
+                                } else if (swipe > minSwipeDistance && hasPrev) {
+                                    onPrev();
+                                }
+                            }}
+                        />
+                    </motion.div>
                 </AnimatePresence>
 
                 {/* Info Overlay */}

@@ -69,32 +69,46 @@ const Gallery = () => {
     // Navigation handlers
     const handleNext = () => {
         if (!selectedPhoto) return;
-        const currentIndex = images.findIndex(img => getImageUrl(img.id) === selectedPhoto.src);
+        // Compare against high-res URL or original URL to find index
+        const currentIndex = images.findIndex(img => {
+            const highRes = img.thumbnailLink ? img.thumbnailLink.replace(/=s\d+$/, '=s3000') : getImageUrl(img.id);
+            return highRes === selectedPhoto.src || getImageUrl(img.id) === selectedPhoto.src;
+        });
+
         if (currentIndex < images.length - 1) {
             const nextPhoto = images[currentIndex + 1];
             setSelectedPhoto({
-                src: getImageUrl(nextPhoto.id),
+                src: nextPhoto.thumbnailLink ? nextPhoto.thumbnailLink.replace(/=s\d+$/, '=s3000') : getImageUrl(nextPhoto.id),
                 alt: nextPhoto.name,
-                metadata: nextPhoto.imageMediaMetadata
+                metadata: nextPhoto.imageMediaMetadata,
+                createdTime: nextPhoto.createdTime
             });
         }
     };
 
     const handlePrev = () => {
         if (!selectedPhoto) return;
-        const currentIndex = images.findIndex(img => getImageUrl(img.id) === selectedPhoto.src);
+        const currentIndex = images.findIndex(img => {
+            const highRes = img.thumbnailLink ? img.thumbnailLink.replace(/=s\d+$/, '=s3000') : getImageUrl(img.id);
+            return highRes === selectedPhoto.src || getImageUrl(img.id) === selectedPhoto.src;
+        });
+
         if (currentIndex > 0) {
             const prevPhoto = images[currentIndex - 1];
             setSelectedPhoto({
-                src: getImageUrl(prevPhoto.id),
+                src: prevPhoto.thumbnailLink ? prevPhoto.thumbnailLink.replace(/=s\d+$/, '=s3000') : getImageUrl(prevPhoto.id),
                 alt: prevPhoto.name,
-                metadata: prevPhoto.imageMediaMetadata
+                metadata: prevPhoto.imageMediaMetadata,
+                createdTime: prevPhoto.createdTime
             });
         }
     };
 
     const currentImageIndex = selectedPhoto
-        ? images.findIndex(img => getImageUrl(img.id) === selectedPhoto.src)
+        ? images.findIndex(img => {
+            const highRes = img.thumbnailLink ? img.thumbnailLink.replace(/=s\d+$/, '=s3000') : getImageUrl(img.id);
+            return highRes === selectedPhoto.src || getImageUrl(img.id) === selectedPhoto.src;
+        })
         : -1;
 
     return (
@@ -181,7 +195,7 @@ const Gallery = () => {
                                                 sm:col-span-auto
                                             `}
                                             onClick={() => setSelectedPhoto({
-                                                src: imageUrl, // Full text for Lightbox
+                                                src: photo.thumbnailLink ? photo.thumbnailLink.replace(/=s\d+$/, '=s3000') : imageUrl, // Use 3000px preview
                                                 alt: photo.name,
                                                 metadata: photo.imageMediaMetadata,
                                                 createdTime: photo.createdTime
@@ -236,8 +250,8 @@ const Gallery = () => {
                     onPrev={handlePrev}
                     hasNext={currentImageIndex < images.length - 1}
                     hasPrev={currentImageIndex > 0}
-                    nextSrc={currentImageIndex < images.length - 1 ? getImageUrl(images[currentImageIndex + 1].id) : null}
-                    prevSrc={currentImageIndex > 0 ? getImageUrl(images[currentImageIndex - 1].id) : null}
+                    nextSrc={currentImageIndex < images.length - 1 ? (images[currentImageIndex + 1].thumbnailLink ? images[currentImageIndex + 1].thumbnailLink.replace(/=s\d+$/, '=s3000') : getImageUrl(images[currentImageIndex + 1].id)) : null}
+                    prevSrc={currentImageIndex > 0 ? (images[currentImageIndex - 1].thumbnailLink ? images[currentImageIndex - 1].thumbnailLink.replace(/=s\d+$/, '=s3000') : getImageUrl(images[currentImageIndex - 1].id)) : null}
                 />
             )}
         </>
