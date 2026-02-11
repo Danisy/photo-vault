@@ -39,7 +39,7 @@ const Lightbox = ({ image, onClose, onNext, onPrev, hasNext, hasPrev }) => {
     };
 
     return (
-        <div className="fixed inset-0 z-50 flex items-center justify-center bg-film-black/95 backdrop-blur-sm p-4 animate-in fade-in duration-200">
+        <div className="fixed inset-0 z-[100] flex items-center justify-center bg-film-black/95 backdrop-blur-sm p-4 animate-in fade-in duration-200">
             {/* Top Right Controls */}
             <div className="absolute top-4 right-4 z-50 flex items-center gap-4">
                 {hasMetadata && (
