@@ -23,6 +23,24 @@ const getPhotoDate = (photo) => {
     }
 };
 
+const LazyImage = ({ src, alt, className, style, onClick }) => {
+    const [isLoaded, setIsLoaded] = useState(false);
+
+    return (
+        <div className={`relative overflow-hidden bg-film-paper ${className}`} style={style} onClick={onClick}>
+            {/* Small placeholder or just background color is handled by parent/bg-film-paper */}
+            <img
+                src={src}
+                alt={alt}
+                loading="lazy"
+                onLoad={() => setIsLoaded(true)}
+                className={`w-full h-full object-cover transition-all duration-700 ease-in-out ${isLoaded ? 'opacity-100 blur-0 scale-100' : 'opacity-0 blur-xl scale-105'
+                    }`}
+            />
+        </div>
+    );
+};
+
 const Gallery = () => {
     const [photos, setPhotos] = useState([]);
     const [loading, setLoading] = useState(true);
@@ -202,50 +220,96 @@ const Gallery = () => {
 
     return (
         <>
-            {folderHistory.length > 0 && (
-                <div className="p-4 mb-2 container mx-auto">
-                    <button
-                        onClick={handleBack}
-                        className="flex items-center text-film-gray hover:text-film-black transition-colors font-mono uppercase tracking-widest text-sm"
-                    >
-                        &larr; Back
-                    </button>
+            {/* Sticky Header with Breadcrumbs and Filters */}
+            <div className="sticky top-0 z-30 bg-film-cream/95 backdrop-blur-md border-b border-film-black/5 transition-all duration-300">
+                <div className="container mx-auto px-4 py-3">
+                    <div className="flex flex-col gap-4">
+                        {/* Top Row: Back Button & Folder Pills */}
+                        <div className="flex items-center gap-4 overflow-x-auto no-scrollbar pb-1">
+                            {folderHistory.length > 0 && (
+                                <button
+                                    onClick={handleBack}
+                                    className="flex-shrink-0 flex items-center gap-1 pr-4 border-r border-film-black/10 text-film-gray hover:text-film-black transition-colors font-mono uppercase tracking-widest text-xs"
+                                >
+                                    &larr; Back
+                                </button>
+                            )}
+
+                            {/* Make "All Photos" appear as an active root state if needed, or just list subfolders */}
+                            {folders.length > 0 ? (
+                                <div className="flex items-center gap-2">
+                                    {folders.map((folder) => (
+                                        <button
+                                            key={folder.id}
+                                            onClick={() => handleFolderClick(folder.id, folder.name)}
+                                            className="whitespace-nowrap px-4 py-1.5 rounded-full border border-film-black/10 text-film-black/60 hover:text-film-black hover:border-film-black hover:bg-white text-xs font-mono tracking-wide transition-all"
+                                        >
+                                            {folder.name}
+                                        </button>
+                                    ))}
+                                </div>
+                            ) : (
+                                <span className="text-xs font-mono text-film-black/30 tracking-widest uppercase">
+                                    {loading ? 'Loading...' : 'Collection View'}
+                                </span>
+                            )}
+                        </div>
+                    </div>
                 </div>
-            )}
+            </div>
+
 
             {loading ? <SkeletonGrid /> : (
-                <div className="p-4 space-y-12 container mx-auto pb-20">
-                    {/* Folders Section */}
-                    {folders.length > 0 && (
-                        <motion.section
-                            initial={{ opacity: 0, y: 20 }}
-                            animate={{ opacity: 1, y: 0 }}
-                            transition={{ duration: 0.5 }}
-                        >
-                            <h2 className="text-xl font-serif italic text-film-black mb-6 flex items-center gap-2 border-b border-film-black/10 pb-2">
-                                <svg xmlns="http://www.w3.org/2000/svg" className="h-5 w-5 text-film-black/50" viewBox="0 0 20 20" fill="currentColor">
-                                    <path d="M2 6a2 2 0 012-2h5l2 2h5a2 2 0 012 2v6a2 2 0 01-2 2H4a2 2 0 01-2-2V6z" />
-                                </svg>
-                                Folders
+                <div className="p-4 space-y-8 container mx-auto pb-20 mt-4">
+
+                    {/* Gallery Controls (Sort/Grid) */}
+                    {images.length > 0 && (
+                        <div className="flex justify-between items-end border-b border-film-black/10 pb-4">
+                            <h2 className="text-xl font-serif italic text-film-black flex items-center gap-3">
+                                <span className="text-film-red font-normal not-italic text-sm font-mono bg-film-paper px-2 py-0.5 rounded-sm">
+                                    {images.length < 10 ? `0${images.length}` : images.length}
+                                </span>
+                                Photos
                             </h2>
-                            <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-6 gap-4">
-                                {folders.map((folder) => (
-                                    <motion.div
-                                        key={folder.id}
-                                        whileHover={{ scale: 1.05 }}
-                                        whileTap={{ scale: 0.95 }}
-                                        className="aspect-[4/3] bg-film-paper rounded-sm flex flex-col items-center justify-center cursor-pointer border border-film-black/10 hover:border-film-black/30 transition-colors group shadow-sm"
-                                        onClick={() => handleFolderClick(folder.id, folder.name)}
+
+                            <div className="flex items-center gap-4">
+                                <button
+                                    onClick={() => setSortOrder(prev => prev === 'desc' ? 'asc' : 'desc')}
+                                    className="hidden sm:flex items-center gap-2 text-xs font-mono uppercase tracking-widest text-film-black/60 hover:text-film-black transition-colors"
+                                >
+                                    <ArrowUpDown size={12} />
+                                    {sortOrder === 'desc' ? 'Newest' : 'Oldest'}
+                                </button>
+
+                                <div className="h-4 w-px bg-film-black/20 hidden sm:block"></div>
+
+                                <div className="flex items-center gap-1 bg-film-paper border border-film-black/10 rounded-sm p-0.5">
+                                    <button
+                                        onClick={() => setGridDensity('low')}
+                                        className={`p-1.5 rounded-sm transition-colors ${gridDensity === 'low' ? 'bg-film-black text-film-cream' : 'text-film-black/40 hover:text-film-black'}`}
+                                        title="Cozy"
                                     >
-                                        <svg xmlns="http://www.w3.org/2000/svg" className="h-12 w-12 text-film-black/20 group-hover:text-film-black/50 mb-3 transition-colors" viewBox="0 0 20 20" fill="currentColor">
-                                            <path d="M2 6a2 2 0 012-2h5l2 2h5a2 2 0 012 2v6a2 2 0 01-2 2H4a2 2 0 01-2-2V6z" />
-                                        </svg>
-                                        <p className="text-film-black/70 group-hover:text-film-black text-sm font-mono px-2 text-center truncate w-full">{folder.name}</p>
-                                    </motion.div>
-                                ))}
+                                        <GripHorizontal size={14} />
+                                    </button>
+                                    <button
+                                        onClick={() => setGridDensity('medium')}
+                                        className={`p-1.5 rounded-sm transition-colors ${gridDensity === 'medium' ? 'bg-film-black text-film-cream' : 'text-film-black/40 hover:text-film-black'}`}
+                                        title="Standard"
+                                    >
+                                        <LayoutGrid size={14} />
+                                    </button>
+                                    <button
+                                        onClick={() => setGridDensity('high')}
+                                        className={`p-1.5 rounded-sm transition-colors ${gridDensity === 'high' ? 'bg-film-black text-film-cream' : 'text-film-black/40 hover:text-film-black'}`}
+                                        title="Compact"
+                                    >
+                                        <Grid3x3 size={14} />
+                                    </button>
+                                </div>
                             </div>
-                        </motion.section>
+                        </div>
                     )}
+
 
                     {/* Photos Section - Masonry Layout */}
                     {images.length > 0 && (
@@ -254,44 +318,7 @@ const Gallery = () => {
                             animate={{ opacity: 1 }}
                             transition={{ duration: 0.5, delay: 0.2 }}
                         >
-                            <div className="flex justify-between items-end mb-8 border-b border-film-black/10 pb-4">
-                                <h2 className="text-2xl font-serif italic text-film-black flex items-center gap-3">
-                                    <span className="text-film-red font-normal not-italic text-base font-mono bg-film-paper px-2 py-1 rounded-sm">02</span>
-                                    Photos
-                                </h2>
-                                <button
-                                    onClick={() => setSortOrder(prev => prev === 'desc' ? 'asc' : 'desc')}
-                                    className="flex items-center gap-2 text-sm font-mono uppercase tracking-widest text-film-black/60 hover:text-film-black transition-colors"
-                                >
-                                    <ArrowUpDown size={14} />
-                                    {sortOrder === 'desc' ? 'Newest First' : 'Oldest First'}
-                                </button>
-                                <div className="h-4 w-px bg-film-black/20 mx-2 hidden sm:block"></div>
-                                {/* Grid Toggle Controls */}
-                                <div className="flex items-center gap-1 bg-film-paper border border-film-black/10 rounded-sm p-1">
-                                    <button
-                                        onClick={() => setGridDensity('low')}
-                                        className={`p-1.5 rounded-sm transition-colors ${gridDensity === 'low' ? 'bg-film-black text-film-cream' : 'text-film-black/40 hover:text-film-black'}`}
-                                        title="Cozy View"
-                                    >
-                                        <GripHorizontal size={14} />
-                                    </button>
-                                    <button
-                                        onClick={() => setGridDensity('medium')}
-                                        className={`p-1.5 rounded-sm transition-colors ${gridDensity === 'medium' ? 'bg-film-black text-film-cream' : 'text-film-black/40 hover:text-film-black'}`}
-                                        title="Standard View"
-                                    >
-                                        <LayoutGrid size={14} />
-                                    </button>
-                                    <button
-                                        onClick={() => setGridDensity('high')}
-                                        className={`p-1.5 rounded-sm transition-colors ${gridDensity === 'high' ? 'bg-film-black text-film-cream' : 'text-film-black/40 hover:text-film-black'}`}
-                                        title="Compact View"
-                                    >
-                                        <Grid3x3 size={14} />
-                                    </button>
-                                </div>
-                            </div>
+                            {/* ... (Previous header removed as it's moved up) ... */}
 
                             {/* Responsive Layout: Masonry Columns based on Density */
                                 (() => {
@@ -344,37 +371,23 @@ const Gallery = () => {
                                                             id: photo.id
                                                         })}
                                                     >
-                                                        <div className="overflow-hidden bg-film-paper relative">
-                                                            <img
-                                                                src={thumbnailUrl} // Use thumbnail for grid
-                                                                alt={photo.name}
-                                                                loading="lazy"
-                                                                className="w-full h-auto object-cover transform transition-transform duration-700 group-hover:scale-[1.02] display-block grayscale-[10%] group-hover:grayscale-0"
-                                                                onError={(e) => {
-                                                                    // Fallback to full image if thumbnail fails
-                                                                    if (e.target.src !== imageUrl) {
-                                                                        e.target.src = imageUrl;
-                                                                    } else {
-                                                                        e.target.onerror = null;
-                                                                        e.target.src = 'https://placehold.co/400x400/1a1a1a/FFF?text=Error';
-                                                                    }
-                                                                }}
-                                                            />
+                                                        {/* Use LazyImage for Blur-up Effect */}
+                                                        <LazyImage
+                                                            src={thumbnailUrl}
+                                                            alt={photo.name}
+                                                            className="aspect-auto w-full"
+                                                        />
 
-                                                            {/* Film Strip EXIF Overlay */}
-                                                            <div className="absolute inset-0 bg-black/40 opacity-0 group-hover:opacity-100 transition-opacity duration-300 flex items-end p-4">
-                                                                <div className="text-white/90 font-mono text-[10px] tracking-widest uppercase border-l-2 border-film-red pl-2">
-                                                                    <p>{exifString}</p>
-                                                                    <p className="opacity-70">{getPhotoDate(photo).toISOString().split('T')[0]}</p>
-                                                                </div>
+                                                        {/* Film Strip EXIF Overlay */}
+                                                        <div className="absolute inset-0 bg-black/40 opacity-0 group-hover:opacity-100 transition-opacity duration-300 flex items-end p-4 pointer-events-none">
+                                                            <div className="text-white/90 font-mono text-[10px] tracking-widest uppercase border-l-2 border-film-red pl-2">
+                                                                <p>{exifString}</p>
+                                                                <p className="opacity-70">{getPhotoDate(photo).toISOString().split('T')[0]}</p>
                                                             </div>
                                                         </div>
 
-                                                        <div className="mt-3 flex justify-between items-center opacity-70 group-hover:opacity-100 transition-opacity">
-                                                            <p className="text-xs font-mono text-film-black truncate w-full">
-                                                                {photo.name.replace(/\.[^/.]+$/, "")}
-                                                            </p>
-                                                        </div>
+                                                        {/* Filename Overlay (Optional, keeping consistent with previous design) */}
+                                                        {/* Removed filename text to cleaner look per "premium" request, EXIF is enough */}
                                                     </motion.div>
                                                 );
                                             })}
