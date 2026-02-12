@@ -229,9 +229,9 @@ const Gallery = () => {
             {/* Sticky Header with Breadcrumbs and Filters */}
             <div className="sticky top-0 z-30 bg-film-cream/95 backdrop-blur-md border-b border-film-black/5 transition-all duration-300">
                 <div className="container mx-auto px-4 py-3">
-                    <div className="flex flex-col gap-4">
-                        {/* Top Row: Back Button & Folder Pills */}
-                        <div className="flex items-center gap-4 overflow-x-auto no-scrollbar pb-1">
+                    <div className="flex flex-col md:flex-row md:items-center justify-between gap-4">
+                        {/* Left Side: Back Button & Folder Pills */}
+                        <div className="flex items-center gap-4 overflow-x-auto no-scrollbar pb-1 flex-1">
                             {folderHistory.length > 0 && (
                                 <button
                                     onClick={handleBack}
@@ -255,11 +255,50 @@ const Gallery = () => {
                                     ))}
                                 </div>
                             ) : (
-                                <span className="text-xs font-mono text-film-black/30 tracking-widest uppercase">
+                                <span className="text-xs font-mono text-film-black/30 tracking-widest uppercase truncate">
                                     {loading ? 'Loading...' : currentFolderName}
                                 </span>
                             )}
                         </div>
+
+                        {/* Right Side: View Controls (Only show if we have images) */}
+                        {images.length > 0 && (
+                            <div className="flex items-center gap-4 flex-shrink-0 border-t md:border-t-0 border-film-black/5 pt-2 md:pt-0">
+                                <button
+                                    onClick={() => setSortOrder(prev => prev === 'desc' ? 'asc' : 'desc')}
+                                    className="flex items-center gap-2 text-xs font-mono uppercase tracking-widest text-film-black/60 hover:text-film-black transition-colors"
+                                >
+                                    <ArrowUpDown size={12} />
+                                    <span className="hidden sm:inline">{sortOrder === 'desc' ? 'Newest' : 'Oldest'}</span>
+                                </button>
+
+                                <div className="h-4 w-px bg-film-black/20"></div>
+
+                                <div className="flex items-center gap-1 bg-film-paper border border-film-black/10 rounded-sm p-0.5">
+                                    <button
+                                        onClick={() => setGridDensity('low')}
+                                        className={`p-1.5 rounded-sm transition-colors ${gridDensity === 'low' ? 'bg-film-black text-film-cream' : 'text-film-black/40 hover:text-film-black'}`}
+                                        title="Cozy"
+                                    >
+                                        <GripHorizontal size={14} />
+                                    </button>
+                                    <button
+                                        onClick={() => setGridDensity('medium')}
+                                        className={`p-1.5 rounded-sm transition-colors ${gridDensity === 'medium' ? 'bg-film-black text-film-cream' : 'text-film-black/40 hover:text-film-black'}`}
+                                        title="Standard"
+                                    >
+                                        <LayoutGrid size={14} />
+                                    </button>
+                                    <button
+                                        onClick={() => setGridDensity('high')}
+                                        className={`p-1.5 rounded-sm transition-colors ${gridDensity === 'high' ? 'bg-film-black text-film-cream' : 'text-film-black/40 hover:text-film-black'}`}
+                                        title="Compact"
+                                    >
+                                        <Grid3x3 size={14} />
+                                    </button>
+                                </div>
+                            </div>
+                        )}
                     </div>
                 </div>
             </div>
@@ -274,59 +313,24 @@ const Gallery = () => {
                             animate={{ opacity: 1 }}
                             transition={{ duration: 0.5, delay: 0.2 }}
                         >
-                            {/* Current Folder Title */}
-                            <motion.h2
-                                key={currentFolderName}
-                                initial={{ opacity: 0, y: 10 }}
-                                animate={{ opacity: 1, y: 0 }}
-                                className="text-4xl md:text-5xl font-serif italic text-film-black mb-6 mt-4"
-                            >
-                                {currentFolderName === 'Collection' ? 'All Photos' : currentFolderName}
-                            </motion.h2>
-
-                            {/* Controls */}
-                            <div className="flex justify-between items-end mb-8 border-b border-film-black/10 pb-4">
-                                <h3 className="text-lg font-mono text-film-gray flex items-center gap-3">
-                                    <span className="text-film-red text-sm bg-film-paper px-2 py-0.5 rounded-sm">
-                                        {images.length < 10 ? `0${images.length}` : images.length}
-                                    </span>
-                                    <span className="uppercase tracking-widest text-xs">Items</span>
-                                </h3>
-
-                                <div className="flex items-center gap-4">
-                                    <button
-                                        onClick={() => setSortOrder(prev => prev === 'desc' ? 'asc' : 'desc')}
-                                        className="hidden sm:flex items-center gap-2 text-xs font-mono uppercase tracking-widest text-film-black/60 hover:text-film-black transition-colors"
+                            <div className="flex flex-col md:flex-row md:items-end justify-between mb-8 border-b border-film-black/10 pb-4 gap-4">
+                                <div>
+                                    {/* Current Folder Title */}
+                                    <motion.h2
+                                        key={currentFolderName}
+                                        initial={{ opacity: 0, y: 10 }}
+                                        animate={{ opacity: 1, y: 0 }}
+                                        className="text-4xl md:text-5xl font-serif italic text-film-black mb-2"
                                     >
-                                        <ArrowUpDown size={12} />
-                                        {sortOrder === 'desc' ? 'Newest' : 'Oldest'}
-                                    </button>
+                                        {currentFolderName === 'Collection' ? 'All Photos' : currentFolderName}
+                                    </motion.h2>
 
-                                    <div className="h-4 w-px bg-film-black/20 hidden sm:block"></div>
-
-                                    <div className="flex items-center gap-1 bg-film-paper border border-film-black/10 rounded-sm p-0.5">
-                                        <button
-                                            onClick={() => setGridDensity('low')}
-                                            className={`p-1.5 rounded-sm transition-colors ${gridDensity === 'low' ? 'bg-film-black text-film-cream' : 'text-film-black/40 hover:text-film-black'}`}
-                                            title="Cozy"
-                                        >
-                                            <GripHorizontal size={14} />
-                                        </button>
-                                        <button
-                                            onClick={() => setGridDensity('medium')}
-                                            className={`p-1.5 rounded-sm transition-colors ${gridDensity === 'medium' ? 'bg-film-black text-film-cream' : 'text-film-black/40 hover:text-film-black'}`}
-                                            title="Standard"
-                                        >
-                                            <LayoutGrid size={14} />
-                                        </button>
-                                        <button
-                                            onClick={() => setGridDensity('high')}
-                                            className={`p-1.5 rounded-sm transition-colors ${gridDensity === 'high' ? 'bg-film-black text-film-cream' : 'text-film-black/40 hover:text-film-black'}`}
-                                            title="Compact"
-                                        >
-                                            <Grid3x3 size={14} />
-                                        </button>
-                                    </div>
+                                    <h3 className="text-sm font-mono text-film-gray flex items-center gap-2">
+                                        <span className="text-film-red bg-film-paper px-1.5 py-0.5 rounded-sm">
+                                            {images.length < 10 ? `0${images.length}` : images.length}
+                                        </span>
+                                        <span className="uppercase tracking-widest text-[10px]">Items</span>
+                                    </h3>
                                 </div>
                             </div>
 
