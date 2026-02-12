@@ -47,6 +47,7 @@ const Gallery = () => {
     const [error, setError] = useState(null);
     const [selectedPhoto, setSelectedPhoto] = useState(null);
     const [currentFolderId, setCurrentFolderId] = useState('');
+    const [currentFolderName, setCurrentFolderName] = useState('Collection');
     const [folderHistory, setFolderHistory] = useState([]);
     const [sortOrder, setSortOrder] = useState('desc'); // 'desc' = Newest first, 'asc' = Oldest first
     const [gridDensity, setGridDensity] = useState('medium'); // 'low', 'medium', 'high'
@@ -90,19 +91,20 @@ const Gallery = () => {
                     });
                 }
             }
-            setDeepLinkChecked(true);
+            setDeepLinkChecked(true); // Mark check as done
         }
     }, [photos]);
 
     // Update URL when selectedPhoto changes
     useEffect(() => {
-        if (!deepLinkChecked) return;
+        if (!deepLinkChecked) return; // Only update URL after initial deep link check
 
         const url = new URL(window.location);
         if (selectedPhoto?.id) {
             url.searchParams.set('photo', selectedPhoto.id);
             window.history.pushState({ photoId: selectedPhoto.id }, '', url.toString());
         } else {
+            // Only clear if the URL actually has a photo param
             if (url.searchParams.has('photo')) {
                 url.searchParams.delete('photo');
                 window.history.pushState({}, '', url.toString());
@@ -122,16 +124,20 @@ const Gallery = () => {
     }, []);
 
     const handleFolderClick = (folderId, folderName) => {
-        setFolderHistory((prev) => [...prev, { id: currentFolderId, name: folderName }]);
+        // Push the CURRENT state to history
+        setFolderHistory((prev) => [...prev, { id: currentFolderId, name: currentFolderName }]);
+        // Set the NEW state
         setCurrentFolderId(folderId);
+        setCurrentFolderName(folderName);
     };
 
     const handleBack = () => {
         if (folderHistory.length === 0) return;
         const newHistory = [...folderHistory];
-        const lastFolder = newHistory.pop();
+        const lastHelper = newHistory.pop(); // This is the state we want to restore
         setFolderHistory(newHistory);
-        setCurrentFolderId(lastFolder.id);
+        setCurrentFolderId(lastHelper.id);
+        setCurrentFolderName(lastHelper.name);
     };
 
     // Skeleton Loader Component
@@ -184,7 +190,7 @@ const Gallery = () => {
                 metadata: nextPhoto.imageMediaMetadata,
                 createdTime: nextPhoto.createdTime,
                 date: getPhotoDate(nextPhoto),
-                id: nextPhoto.id
+                id: nextPhoto.id // Ensure ID is passed
             });
         }
     };
@@ -206,7 +212,7 @@ const Gallery = () => {
                 metadata: prevPhoto.imageMediaMetadata,
                 createdTime: prevPhoto.createdTime,
                 date: getPhotoDate(prevPhoto),
-                id: prevPhoto.id
+                id: prevPhoto.id // Ensure ID is passed
             });
         }
     };
@@ -247,36 +253,19 @@ const Gallery = () => {
                                             {folder.name}
                                         </button>
                                     ))}
-                                </div>
-                            ) : (
-                                <span className="text-xs font-mono text-film-black/30 tracking-widest uppercase">
-                                    {loading ? 'Loading...' : 'Collection View'}
-                                </span>
+                                    <span className="text-xs font-mono text-film-black/30 tracking-widest uppercase">
+                                        {loading ? 'Loading...' : currentFolderName}
+                                    </span>
                             )}
-                        </div>
+                                </div>
+                    </div>
                     </div>
                 </div>
-            </div>
 
 
-            {loading ? <SkeletonGrid /> : (
+                {loading ? <SkeletonGrid /> : (
                 <div className="p-4 space-y-8 container mx-auto pb-20 mt-4">
 
-                    {/* Gallery Controls (Sort/Grid) */}
-                    {images.length > 0 && (
-                        <div className="flex justify-between items-end border-b border-film-black/10 pb-4">
-                            <h2 className="text-xl font-serif italic text-film-black flex items-center gap-3">
-                                <span className="text-film-red font-normal not-italic text-sm font-mono bg-film-paper px-2 py-0.5 rounded-sm">
-                                    {images.length < 10 ? `0${images.length}` : images.length}
-                                </span>
-                                Photos
-                            </h2>
-
-                            <div className="flex items-center gap-4">
-                                <button
-                                    onClick={() => setSortOrder(prev => prev === 'desc' ? 'asc' : 'desc')}
-                                    className="hidden sm:flex items-center gap-2 text-xs font-mono uppercase tracking-widest text-film-black/60 hover:text-film-black transition-colors"
-                                >
                                     <ArrowUpDown size={12} />
                                     {sortOrder === 'desc' ? 'Newest' : 'Oldest'}
                                 </button>
@@ -307,119 +296,125 @@ const Gallery = () => {
                                     </button>
                                 </div>
                             </div>
-                        </div>
+        </div >
                     )}
 
 
-                    {/* Photos Section - Masonry Layout */}
-                    {images.length > 0 && (
-                        <motion.section
-                            initial={{ opacity: 0 }}
-                            animate={{ opacity: 1 }}
-                            transition={{ duration: 0.5, delay: 0.2 }}
-                        >
-                            {/* ... (Previous header removed as it's moved up) ... */}
+{/* Photos Section - Masonry Layout */ }
+{
+    images.length > 0 && (
+        <motion.section
+            initial={{ opacity: 0 }}
+            animate={{ opacity: 1 }}
+            transition={{ duration: 0.5, delay: 0.2 }}
+        >
+            {/* ... (Previous header removed as it's moved up) ... */}
 
-                            {/* Responsive Layout: Masonry Columns based on Density */
-                                (() => {
-                                    const columnClasses = {
-                                        low: 'columns-1 sm:columns-2 lg:columns-2 gap-8',
-                                        medium: 'columns-2 sm:columns-2 md:columns-3 lg:columns-4 gap-4 sm:gap-6',
-                                        high: 'columns-3 sm:columns-4 md:columns-5 lg:columns-6 gap-2'
-                                    };
+            {/* Responsive Layout: Masonry Columns based on Density */
+                (() => {
+                    const columnClasses = {
+                        low: 'columns-1 sm:columns-2 lg:columns-2 gap-8',
+                        medium: 'columns-2 sm:columns-2 md:columns-3 lg:columns-4 gap-4 sm:gap-6',
+                        high: 'columns-3 sm:columns-4 md:columns-5 lg:columns-6 gap-2'
+                    };
 
-                                    const itemSpacing = {
-                                        low: 'mb-8',
-                                        medium: 'mb-4 sm:mb-6',
-                                        high: 'mb-2'
-                                    };
+                    const itemSpacing = {
+                        low: 'mb-8',
+                        medium: 'mb-4 sm:mb-6',
+                        high: 'mb-2'
+                    };
 
-                                    return (
-                                        <div className={columnClasses[gridDensity]}>
-                                            {images.map((photo, index) => {
-                                                const imageUrl = getImageUrl(photo.id);
-                                                // Use thumbnail for grid if available, requesting larger size (s500)
-                                                const thumbnailUrl = photo.thumbnailLink
-                                                    ? photo.thumbnailLink.replace(/=s\d+$/, '=s500')
-                                                    : imageUrl;
+                    return (
+                        <div className={columnClasses[gridDensity]}>
+                            {images.map((photo, index) => {
+                                const imageUrl = getImageUrl(photo.id);
+                                // Use thumbnail for grid if available, requesting larger size (s500)
+                                const thumbnailUrl = photo.thumbnailLink
+                                    ? photo.thumbnailLink.replace(/=s\d+$/, '=s500')
+                                    : imageUrl;
 
-                                                // Determine aspect ratio from metadata
-                                                const width = photo.imageMediaMetadata?.width;
-                                                const height = photo.imageMediaMetadata?.height;
-                                                const isPortrait = height && width ? height > width : false;
+                                // Determine aspect ratio from metadata
+                                const width = photo.imageMediaMetadata?.width;
+                                const height = photo.imageMediaMetadata?.height;
+                                const isPortrait = height && width ? height > width : false;
 
-                                                // Format simple EXIF string
-                                                const exifString = `${photo.imageMediaMetadata?.cameraMake || ''} ${photo.imageMediaMetadata?.cameraModel || ''} • ISO ${photo.imageMediaMetadata?.isoSpeed || '-'} • f/${photo.imageMediaMetadata?.aperture || '-'}`;
+                                // Format simple EXIF string
+                                const exifString = `${photo.imageMediaMetadata?.cameraMake || ''} ${photo.imageMediaMetadata?.cameraModel || ''} • ISO ${photo.imageMediaMetadata?.isoSpeed || '-'} • f/${photo.imageMediaMetadata?.aperture || '-'}`;
 
-                                                return (
-                                                    <motion.div
-                                                        key={photo.id}
-                                                        initial={{ opacity: 0, y: 20 }}
-                                                        animate={{ opacity: 1, y: 0 }}
-                                                        transition={{ duration: 0.5, delay: index * 0.05 }}
-                                                        className={`break-inside-avoid inline-block w-full align-top bg-white p-3 shadow-[0_4px_20px_-4px_rgba(0,0,0,0.1)] hover:shadow-[0_8px_30px_-4px_rgba(0,0,0,0.15)] transition-shadow duration-300 ease-in-out cursor-zoom-in group relative ${itemSpacing[gridDensity]}`}
-                                                        style={{
-                                                            breakInside: 'avoid',
-                                                            WebkitBreakInside: 'avoid'
-                                                        }}
-                                                        onClick={() => setSelectedPhoto({
-                                                            src: photo.thumbnailLink ? photo.thumbnailLink.replace(/=s\d+$/, '=s3000') : imageUrl, // Use 3000px preview
-                                                            alt: photo.name,
-                                                            metadata: photo.imageMediaMetadata,
-                                                            createdTime: photo.createdTime,
-                                                            date: getPhotoDate(photo),
-                                                            id: photo.id
-                                                        })}
-                                                    >
-                                                        {/* Use LazyImage for Blur-up Effect */}
-                                                        <LazyImage
-                                                            src={thumbnailUrl}
-                                                            alt={photo.name}
-                                                            className="aspect-auto w-full"
-                                                        />
+                                return (
+                                    <motion.div
+                                        key={photo.id}
+                                        initial={{ opacity: 0, y: 20 }}
+                                        animate={{ opacity: 1, y: 0 }}
+                                        transition={{ duration: 0.5, delay: index * 0.05 }}
+                                        className={`break-inside-avoid inline-block w-full align-top bg-white p-3 shadow-[0_4px_20px_-4px_rgba(0,0,0,0.1)] hover:shadow-[0_8px_30px_-4px_rgba(0,0,0,0.15)] transition-shadow duration-300 ease-in-out cursor-zoom-in group relative ${itemSpacing[gridDensity]}`}
+                                        style={{
+                                            breakInside: 'avoid',
+                                            WebkitBreakInside: 'avoid'
+                                        }}
+                                        onClick={() => setSelectedPhoto({
+                                            src: photo.thumbnailLink ? photo.thumbnailLink.replace(/=s\d+$/, '=s3000') : imageUrl, // Use 3000px preview
+                                            alt: photo.name,
+                                            metadata: photo.imageMediaMetadata,
+                                            createdTime: photo.createdTime,
+                                            date: getPhotoDate(photo),
+                                            id: photo.id
+                                        })}
+                                    >
+                                        {/* Use LazyImage for Blur-up Effect */}
+                                        <LazyImage
+                                            src={thumbnailUrl}
+                                            alt={photo.name}
+                                            className="aspect-auto w-full"
+                                        />
 
-                                                        {/* Film Strip EXIF Overlay */}
-                                                        <div className="absolute inset-0 bg-black/40 opacity-0 group-hover:opacity-100 transition-opacity duration-300 flex items-end p-4 pointer-events-none">
-                                                            <div className="text-white/90 font-mono text-[10px] tracking-widest uppercase border-l-2 border-film-red pl-2">
-                                                                <p>{exifString}</p>
-                                                                <p className="opacity-70">{getPhotoDate(photo).toISOString().split('T')[0]}</p>
-                                                            </div>
-                                                        </div>
-
-                                                        {/* Filename Overlay (Optional, keeping consistent with previous design) */}
-                                                        {/* Removed filename text to cleaner look per "premium" request, EXIF is enough */}
-                                                    </motion.div>
-                                                );
-                                            })}
+                                        {/* Film Strip EXIF Overlay */}
+                                        <div className="absolute inset-0 bg-black/40 opacity-0 group-hover:opacity-100 transition-opacity duration-300 flex items-end p-4 pointer-events-none">
+                                            <div className="text-white/90 font-mono text-[10px] tracking-widest uppercase border-l-2 border-film-red pl-2">
+                                                <p>{exifString}</p>
+                                                <p className="opacity-70">{getPhotoDate(photo).toISOString().split('T')[0]}</p>
+                                            </div>
                                         </div>
-                                    );
-                                })()}
-                        </motion.section>
-                    )}
 
-                    {photos.length === 0 && !loading && (
-                        <div className="flex flex-col items-center justify-center py-32 text-gray-500">
-                            <div className="bg-gray-800/50 p-6 rounded-full mb-4">
-                                <ImageIcon size={48} className="opacity-50" />
-                            </div>
-                            <p className="text-lg">No content found in this folder.</p>
+                                        {/* Filename Overlay (Optional, keeping consistent with previous design) */}
+                                        {/* Removed filename text to cleaner look per "premium" request, EXIF is enough */}
+                                    </motion.div>
+                                );
+                            })}
                         </div>
-                    )}
-                </div>
+                    );
+                })()}
+        </motion.section>
+    )
+}
+
+{
+    photos.length === 0 && !loading && (
+        <div className="flex flex-col items-center justify-center py-32 text-gray-500">
+            <div className="bg-gray-800/50 p-6 rounded-full mb-4">
+                <ImageIcon size={48} className="opacity-50" />
+            </div>
+            <p className="text-lg">No content found in this folder.</p>
+        </div>
+    )
+}
+                </div >
             )}
 
-            {selectedPhoto && (
-                <Lightbox
-                    image={selectedPhoto}
-                    onClose={() => setSelectedPhoto(null)}
-                    onNext={handleNext}
-                    onPrev={handlePrev}
-                    hasNext={currentImageIndex < images.length - 1}
-                    hasPrev={currentImageIndex > 0}
-                    nextSrc={currentImageIndex < images.length - 1 ? (images[currentImageIndex + 1].thumbnailLink ? images[currentImageIndex + 1].thumbnailLink.replace(/=s\d+$/, '=s3000') : getImageUrl(images[currentImageIndex + 1].id)) : null}
-                    prevSrc={currentImageIndex > 0 ? (images[currentImageIndex - 1].thumbnailLink ? images[currentImageIndex - 1].thumbnailLink.replace(/=s\d+$/, '=s3000') : getImageUrl(images[currentImageIndex - 1].id)) : null}
-                />
-            )}
+{
+    selectedPhoto && (
+        <Lightbox
+            image={selectedPhoto}
+            onClose={() => setSelectedPhoto(null)}
+            onNext={handleNext}
+            onPrev={handlePrev}
+            hasNext={currentImageIndex < images.length - 1}
+            hasPrev={currentImageIndex > 0}
+            nextSrc={currentImageIndex < images.length - 1 ? (images[currentImageIndex + 1].thumbnailLink ? images[currentImageIndex + 1].thumbnailLink.replace(/=s\d+$/, '=s3000') : getImageUrl(images[currentImageIndex + 1].id)) : null}
+            prevSrc={currentImageIndex > 0 ? (images[currentImageIndex - 1].thumbnailLink ? images[currentImageIndex - 1].thumbnailLink.replace(/=s\d+$/, '=s3000') : getImageUrl(images[currentImageIndex - 1].id)) : null}
+        />
+    )
+}
         </>
     );
 };
