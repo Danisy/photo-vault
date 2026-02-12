@@ -269,7 +269,7 @@ const Gallery = () => {
                                     className="flex items-center gap-2 text-xs font-mono uppercase tracking-widest text-film-black/60 hover:text-film-black transition-colors"
                                 >
                                     <ArrowUpDown size={12} />
-                                    <span className="hidden sm:inline">{sortOrder === 'desc' ? 'Newest' : 'Oldest'}</span>
+                                    <span>{sortOrder === 'desc' ? 'New to Old' : 'Old to New'}</span>
                                 </button>
 
                                 <div className="h-4 w-px bg-film-black/20"></div>
