@@ -1,10 +1,7 @@
-import React, { useState } from 'react';
+import React from 'react';
 import { motion } from 'framer-motion';
-import About from './About';
 
-const Hero = () => {
-    const [isAboutOpen, setIsAboutOpen] = useState(false);
-
+const Hero = ({ onOpenAbout }) => {
     return (
         <section className="relative min-h-[60vh] flex flex-col items-center justify-center text-center px-4 py-20 border-b border-film-black/10 bg-film-cream z-20">
             <motion.div
@@ -24,14 +21,12 @@ const Hero = () => {
                 </p>
 
                 <button
-                    onClick={() => setIsAboutOpen(true)}
+                    onClick={onOpenAbout}
                     className="inline-block border border-film-black/20 px-6 py-2 rounded-full text-film-black/60 hover:text-film-black hover:border-film-black hover:bg-white/50 transition-all font-mono text-sm uppercase tracking-widest"
                 >
                     About The Photographer
                 </button>
             </motion.div>
-
-            <About isOpen={isAboutOpen} onClose={() => setIsAboutOpen(false)} />
         </section>
     );
 };

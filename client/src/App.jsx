@@ -3,10 +3,11 @@ import { AnimatePresence, motion } from 'framer-motion';
 import { Home } from 'lucide-react';
 import Gallery from './components/Gallery';
 import Hero from './components/Hero';
-import Landing from './components/Landing';
+import About from './components/About';
 
 function App() {
   const [showLanding, setShowLanding] = useState(true);
+  const [isAboutOpen, setIsAboutOpen] = useState(false);
 
   useEffect(() => {
     // Check if we are checking a specific photo (Direct Link)
@@ -23,6 +24,8 @@ function App() {
           <Landing key="landing" onEnter={() => setShowLanding(false)} />
         )}
       </AnimatePresence>
+
+      <About isOpen={isAboutOpen} onClose={() => setIsAboutOpen(false)} />
 
       <AnimatePresence>
         {!showLanding && (
@@ -41,7 +44,7 @@ function App() {
       </AnimatePresence>
 
       <div className={showLanding ? 'h-screen overflow-hidden' : ''}>
-        <Hero />
+        <Hero onOpenAbout={() => setIsAboutOpen(true)} />
 
         <main className="relative">
           <Gallery />
