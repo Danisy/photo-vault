@@ -4,6 +4,7 @@ import { Home } from 'lucide-react';
 import Gallery from './components/Gallery';
 import Hero from './components/Hero';
 import About from './components/About';
+import Landing from './components/Landing';
 
 function App() {
   const [showLanding, setShowLanding] = useState(true);
