@@ -17,7 +17,7 @@ function App() {
   }, []);
 
   return (
-    <div className="min-h-screen bg-film-cream text-film-black font-sans selection:bg-film-red selection:text-white overflow-x-hidden">
+    <div className="min-h-screen bg-film-cream text-film-black font-sans selection:bg-film-red selection:text-white">
       <AnimatePresence mode="wait">
         {showLanding && (
           <Landing key="landing" onEnter={() => setShowLanding(false)} />
