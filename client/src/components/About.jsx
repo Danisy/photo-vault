@@ -58,7 +58,7 @@ const About = ({ isOpen, onClose }) => {
                         A beginner photographer who enjoys capturing quiet moments, everyday scenes, and emotions that often go unnoticed.
                     </p>
                     <p>
-                        This website is a collection of photographs taken with my camera—small pieces of time, light, and feeling, preserved as I see them.
+                        This website is a collection of photographs taken with my camera, small pieces of time, light, and feeling, preserved as I see them.
                     </p>
                 </div>
 
