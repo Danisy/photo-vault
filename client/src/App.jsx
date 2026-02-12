@@ -36,7 +36,7 @@ function App() {
             exit={{ opacity: 0, x: -20 }}
             transition={{ delay: 1, duration: 0.5 }}
             onClick={() => setShowLanding(true)}
-            className="fixed top-6 left-6 z-40 p-3 bg-film-cream/80 backdrop-blur-sm border border-film-black/10 rounded-full shadow-sm hover:bg-film-black hover:text-white transition-all duration-300 group"
+            className="fixed top-24 left-6 z-40 p-3 bg-film-cream/80 backdrop-blur-sm border border-film-black/10 rounded-full shadow-sm hover:bg-film-black hover:text-white transition-all duration-300 group"
             title="Return to Cover"
           >
             <Home size={20} className="opacity-60 group-hover:opacity-100" />
