@@ -8,6 +8,9 @@ const courier = Courier_Prime({ subsets: ["latin"], weight: ["400", "700"], styl
 export const metadata = {
   title: "zcollection",
   description: "A curated archive of visual memories.",
+  icons: {
+    icon: "/zc_favicon.svg",
+  },
 };
 
 export default function RootLayout({ children }) {
