@@ -5,7 +5,7 @@ import NodeCache from 'node-cache';
 // Initialize cache with 5 minutes (300 seconds) TTL
 const cache = new NodeCache({ stdTTL: 300 });
 
-export const revalidate = 300; // Cache for 5 minutes
+export const dynamic = 'force-dynamic'; // Always run as serverless function, not static
 
 export async function GET(request) {
     try {
