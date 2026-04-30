@@ -6,7 +6,7 @@ const playfair = Playfair_Display({ subsets: ["latin"], weight: ["400", "600", "
 const courier = Courier_Prime({ subsets: ["latin"], weight: ["400", "700"], style: ["normal", "italic"], variable: "--font-courier" });
 
 export const metadata = {
-  title: "zcollection",
+  title: "Danisy Ahnaf Collection",
   description: "A curated archive of visual memories.",
   icons: {
     icon: "/zc_favicon.svg",
