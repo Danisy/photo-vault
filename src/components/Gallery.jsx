@@ -1,3 +1,4 @@
+"use client";
 import React, { useState, useEffect } from 'react';
 import { fetchPhotos, getImageUrl } from '../services/api';
 import Lightbox from './Lightbox';
@@ -257,12 +258,7 @@ const Gallery = () => {
                             ) : (
                                 <span className={`text-xs font-mono tracking-widest uppercase flex items-center gap-2 ${loading ? '' : 'text-film-black/30 truncate'}`}>
                                     {loading ? (
-                                        <>
-                                            <span className="text-film-black/50">Loading...</span>
-                                            <span className="normal-case text-film-black/80 tracking-normal whitespace-nowrap">
-                                                (Server waking up... takes up to 60s)
-                                            </span>
-                                        </>
+                                        <span className="text-film-black/50">Loading...</span>
                                     ) : currentFolderName}
                                 </span>
                             )}

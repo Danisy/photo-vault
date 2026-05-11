@@ -7,7 +7,7 @@ const courier = Courier_Prime({ subsets: ["latin"], weight: ["400", "700"], styl
 
 export const metadata = {
   title: "Danisy Ahnaf Collection",
-  description: "A curated archive of visual memories.",
+  description: "Portfolio of digital creations by Danisy Ahnaf. Where art meets code.",
   icons: {
     icon: "/zc_favicon.svg",
   },

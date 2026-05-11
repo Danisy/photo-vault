@@ -1,3 +1,4 @@
+"use client";
 import React, { useState, useEffect } from 'react';
 import { X, ChevronLeft, ChevronRight, Info, Play, Pause, Link as LinkIcon, Check } from 'lucide-react';
 import { motion, AnimatePresence } from 'framer-motion';

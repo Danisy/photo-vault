@@ -1,3 +1,4 @@
+"use client";
 import React from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
 import { X, Instagram } from 'lucide-react';
@@ -64,7 +65,7 @@ const About = ({ isOpen, onClose }) => {
 
                 <div className="flex items-center justify-center gap-6 border-t border-film-black/10 pt-6">
                     <a
-                        href="https://www.instagram.com/danisyahnaf1/"
+                        href="https://www.instagram.com/danisyahnaf/"
                         target="_blank"
                         rel="noopener noreferrer"
                         className="flex items-center gap-2 text-film-black/60 hover:text-film-red transition-colors group"
