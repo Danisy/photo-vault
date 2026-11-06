@@ -29,41 +29,41 @@ const Landing = ({ onEnter }) => {
                 </motion.div>
 
                 {/* Featured Project Card */}
-                <motion.a
+                <motion.button
                     initial={{ opacity: 0, y: 15 }}
                     animate={{ opacity: 1, y: 0 }}
                     transition={{ duration: 0.8, delay: 0.8 }}
-                    href="https://symphonyofsouls.vercel.app"
-                    target="_blank"
-                    rel="noopener noreferrer"
-                    className="mt-10 block w-full max-w-sm mx-auto border border-film-black/15 rounded-sm p-6 hover:border-film-black/40 hover:shadow-lg transition-all duration-500 group cursor-pointer"
+                    onClick={onEnter}
+                    className="mt-10 block w-full max-w-sm mx-auto border border-film-black/15 rounded-sm p-6 hover:border-film-black/40 hover:shadow-lg transition-all duration-500 group cursor-pointer text-center"
                 >
                     <p className="text-[10px] font-mono uppercase tracking-[0.25em] text-film-black/40 mb-3">
                         ★ Featured Project
                     </p>
                     <h2 className="text-xl md:text-2xl font-serif italic text-film-black group-hover:text-film-red transition-colors duration-300">
-                        Symphony of Souls
+                        Photo Collection
                     </h2>
                     <p className="text-xs font-mono text-film-black/50 mt-2 leading-relaxed">
-                        A tribute to the world&apos;s greatest composers
+                        A curated archive of visual memories
                     </p>
-                    <div className="mt-4 flex items-center gap-2 text-[10px] font-mono uppercase tracking-widest text-film-black/40 group-hover:text-film-black transition-colors duration-300">
+                    <div className="mt-4 flex items-center justify-center gap-2 text-[10px] font-mono uppercase tracking-widest text-film-black/40 group-hover:text-film-black transition-colors duration-300">
                         <span>Explore</span>
                         <span className="group-hover:translate-x-1 transition-transform duration-300">→</span>
                     </div>
-                </motion.a>
+                </motion.button>
 
                 {/* Other Projects */}
                 <div className="mt-6 flex flex-col sm:flex-row items-center gap-4">
-                    <motion.button
+                    <motion.a
                         initial={{ opacity: 0 }}
                         animate={{ opacity: 1 }}
                         transition={{ duration: 0.8, delay: 1.1 }}
-                        onClick={onEnter}
+                        href="https://symphonyofsouls.vercel.app"
+                        target="_blank"
+                        rel="noopener noreferrer"
                         className="min-w-[200px] text-center px-8 py-3 border border-film-black/20 hover:border-film-black hover:bg-film-black hover:text-white transition-all duration-300 rounded-sm font-mono text-xs uppercase tracking-widest"
                     >
-                        Photo Collection
-                    </motion.button>
+                        Symphony of Souls
+                    </motion.a>
 
                     <motion.a
                         initial={{ opacity: 0 }}
