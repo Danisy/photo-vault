@@ -44,14 +44,39 @@ const LazyImage = ({ src, alt, className, style, onClick }) => {
 
 const Gallery = () => {
     const [photos, setPhotos] = useState([]);
+    const [availableFolders, setAvailableFolders] = useState([]);
     const [loading, setLoading] = useState(true);
     const [error, setError] = useState(null);
     const [selectedPhoto, setSelectedPhoto] = useState(null);
     const [currentFolderId, setCurrentFolderId] = useState('');
     const [currentFolderName, setCurrentFolderName] = useState('Collection');
-    const [folderHistory, setFolderHistory] = useState([]);
     const [sortOrder, setSortOrder] = useState('desc'); // 'desc' = Newest first, 'asc' = Oldest first
     const [gridDensity, setGridDensity] = useState('medium'); // 'low', 'medium', 'high'
+    const [columnCount, setColumnCount] = useState(4);
+
+    // Responsive column count calculation
+    useEffect(() => {
+        const updateColumns = () => {
+            const width = typeof window !== 'undefined' ? window.innerWidth : 1024;
+            if (gridDensity === 'low') {
+                setColumnCount(width >= 640 ? 2 : 1);
+            } else if (gridDensity === 'high') {
+                if (width >= 1280) setColumnCount(6);
+                else if (width >= 1024) setColumnCount(5);
+                else if (width >= 768) setColumnCount(4);
+                else setColumnCount(3);
+            } else {
+                // medium
+                if (width >= 1024) setColumnCount(4);
+                else if (width >= 768) setColumnCount(3);
+                else setColumnCount(2);
+            }
+        };
+
+        updateColumns();
+        window.addEventListener('resize', updateColumns);
+        return () => window.removeEventListener('resize', updateColumns);
+    }, [gridDensity]);
 
     useEffect(() => {
         const loadPhotos = async () => {
@@ -59,6 +84,13 @@ const Gallery = () => {
             try {
                 const data = await fetchPhotos(currentFolderId);
                 setPhotos(data);
+
+                // If we are at root, store the folders so pills stay available across all sections
+                if (!currentFolderId) {
+                    const rootFolders = data.filter(item => item.mimeType === 'application/vnd.google-apps.folder');
+                    setAvailableFolders(rootFolders);
+                }
+
                 setError(null);
             } catch (err) {
                 setError('Failed to load content. Please check your connection.');
@@ -124,21 +156,10 @@ const Gallery = () => {
         return () => window.removeEventListener('popstate', handlePopState);
     }, []);
 
-    const handleFolderClick = (folderId, folderName) => {
-        // Push the CURRENT state to history
-        setFolderHistory((prev) => [...prev, { id: currentFolderId, name: currentFolderName }]);
-        // Set the NEW state
+    const handleFolderSelect = (folderId, folderName) => {
+        if (folderId === currentFolderId && !loading) return;
         setCurrentFolderId(folderId);
         setCurrentFolderName(folderName);
-    };
-
-    const handleBack = () => {
-        if (folderHistory.length === 0) return;
-        const newHistory = [...folderHistory];
-        const lastHelper = newHistory.pop(); // This is the state we want to restore
-        setFolderHistory(newHistory);
-        setCurrentFolderId(lastHelper.id);
-        setCurrentFolderName(lastHelper.name);
     };
 
     // Skeleton Loader Component
@@ -154,16 +175,18 @@ const Gallery = () => {
         return (
             <div className="text-center text-red-400 py-10">
                 <p>{error}</p>
-                {folderHistory.length > 0 && (
-                    <button onClick={handleBack} className="mt-4 px-4 py-2 bg-gray-800 rounded hover:bg-gray-700 text-white">
-                        Go Back
+                {currentFolderId && (
+                    <button
+                        onClick={() => handleFolderSelect('', 'Collection')}
+                        className="mt-4 px-4 py-2 bg-gray-800 rounded hover:bg-gray-700 text-white"
+                    >
+                        Return to All Photos
                     </button>
                 )}
             </div>
         );
     }
 
-    const folders = photos.filter(item => item.mimeType === 'application/vnd.google-apps.folder');
     const rawImages = photos.filter(item => item.mimeType !== 'application/vnd.google-apps.folder');
 
     const images = React.useMemo(() => {
@@ -173,6 +196,16 @@ const Gallery = () => {
             return sortOrder === 'desc' ? dateB - dateA : dateA - dateB;
         });
     }, [rawImages, sortOrder]);
+
+    // Distribute sorted images round-robin into columns so the layout reads Left-to-Right
+    const effectiveColumnCount = Math.max(1, Math.min(columnCount, images.length || 1));
+    const columns = React.useMemo(() => {
+        const cols = Array.from({ length: effectiveColumnCount }, () => []);
+        images.forEach((photo, index) => {
+            cols[index % effectiveColumnCount].push({ photo, originalIndex: index });
+        });
+        return cols;
+    }, [images, effectiveColumnCount]);
 
     // Navigation handlers
     const handleNext = () => {
@@ -231,35 +264,47 @@ const Gallery = () => {
             <div className="sticky top-0 z-30 bg-film-cream/95 backdrop-blur-md border-b border-film-black/5 transition-all duration-300">
                 <div className="container mx-auto px-4 py-3">
                     <div className="flex flex-col md:flex-row md:items-center justify-between gap-4">
-                        {/* Left Side: Back Button & Folder Pills */}
-                        <div className="flex items-center gap-4 overflow-x-auto no-scrollbar pb-1 flex-1">
-                            {folderHistory.length > 0 && (
-                                <button
-                                    onClick={handleBack}
-                                    className="flex-shrink-0 flex items-center gap-1 pr-4 border-r border-film-black/10 text-film-gray hover:text-film-black transition-colors font-mono uppercase tracking-widest text-xs"
-                                >
-                                    &larr; Back
-                                </button>
-                            )}
-
-                            {/* Folder Pills */}
-                            {folders.length > 0 ? (
+                        {/* Left Side: Folder Pills (Always visible with active state) */}
+                        <div className="flex items-center gap-2 overflow-x-auto no-scrollbar pb-1 flex-1">
+                            {availableFolders.length > 0 ? (
                                 <div className="flex items-center gap-2">
-                                    {folders.map((folder) => (
-                                        <button
-                                            key={folder.id}
-                                            onClick={() => handleFolderClick(folder.id, folder.name)}
-                                            className="whitespace-nowrap px-4 py-1.5 rounded-full border border-film-black/10 text-film-black/60 hover:text-film-black hover:border-film-black hover:bg-white text-xs font-mono tracking-wide transition-all"
-                                        >
-                                            {folder.name}
-                                        </button>
-                                    ))}
+                                    <button
+                                        onClick={() => handleFolderSelect('', 'Collection')}
+                                        className={`whitespace-nowrap px-4 py-1.5 rounded-full border text-xs font-mono tracking-wide transition-all ${
+                                            !currentFolderId
+                                                ? 'bg-film-red text-film-cream border-film-red shadow-sm font-medium'
+                                                : 'border-film-red/30 text-film-red hover:border-film-red hover:bg-film-paper/60'
+                                        }`}
+                                    >
+                                        All Photos
+                                    </button>
+                                    {availableFolders.map((folder) => {
+                                        const isActive = currentFolderId === folder.id;
+                                        return (
+                                            <button
+                                                key={folder.id}
+                                                onClick={() => handleFolderSelect(folder.id, folder.name)}
+                                                className={`whitespace-nowrap px-4 py-1.5 rounded-full border text-xs font-mono tracking-wide transition-all ${
+                                                    isActive
+                                                        ? 'bg-film-red text-film-cream border-film-red shadow-sm font-medium'
+                                                        : 'border-film-red/30 text-film-red hover:border-film-red hover:bg-film-paper/60'
+                                                }`}
+                                            >
+                                                {folder.name}
+                                            </button>
+                                        );
+                                    })}
                                 </div>
                             ) : (
-                                <span className={`text-xs font-mono tracking-widest uppercase flex items-center gap-2 ${loading ? '' : 'text-film-black/30 truncate'}`}>
+                                <span className={`text-xs font-mono tracking-widest uppercase flex items-center gap-2 ${loading ? '' : 'text-film-red/50 truncate'}`}>
                                     {loading ? (
-                                        <span className="text-film-black/50">Loading...</span>
-                                    ) : currentFolderName}
+                                        <span className="text-film-red/70 flex items-center gap-1.5">
+                                            <Loader2 size={12} className="animate-spin" />
+                                            Loading...
+                                        </span>
+                                    ) : (
+                                        currentFolderName === 'Collection' ? 'All Photos' : currentFolderName
+                                    )}
                                 </span>
                             )}
                         </div>
@@ -337,77 +382,81 @@ const Gallery = () => {
                                 </div>
                             </div>
 
-                            {/* Masonry Layout */}
+                            {/* Masonry Layout: Left-to-Right Ordering */}
                             {(() => {
-                                const columnClasses = {
-                                    low: 'columns-1 sm:columns-2 lg:columns-2 gap-8',
-                                    medium: 'columns-2 sm:columns-2 md:columns-3 lg:columns-4 gap-4 sm:gap-6',
-                                    high: 'columns-3 sm:columns-4 md:columns-5 lg:columns-6 gap-2'
-                                };
-
-                                const itemSpacing = {
-                                    low: 'mb-8',
-                                    medium: 'mb-4 sm:mb-6',
-                                    high: 'mb-2'
-                                };
+                                const gapClass = {
+                                    low: 'gap-8',
+                                    medium: 'gap-4 sm:gap-6',
+                                    high: 'gap-2'
+                                }[gridDensity];
 
                                 return (
-                                    <div className={columnClasses[gridDensity]}>
-                                        {images.map((photo, index) => {
-                                            const imageUrl = getImageUrl(photo.id);
-                                            const thumbnailUrl = photo.thumbnailLink
-                                                ? photo.thumbnailLink.replace(/=s\d+$/, '=s500')
-                                                : imageUrl;
+                                    <div
+                                        className={`grid ${gapClass}`}
+                                        style={{
+                                            gridTemplateColumns: `repeat(${effectiveColumnCount}, minmax(0, 1fr))`
+                                        }}
+                                    >
+                                        {columns.map((col, colIdx) => (
+                                            <div key={colIdx} className={`flex flex-col ${gapClass}`}>
+                                                {col.map(({ photo, originalIndex }) => {
+                                                    const imageUrl = getImageUrl(photo.id);
+                                                    const thumbnailUrl = photo.thumbnailLink
+                                                        ? photo.thumbnailLink.replace(/=s\d+$/, '=s500')
+                                                        : imageUrl;
 
-                                            const exifString = `${photo.imageMediaMetadata?.cameraMake || ''} ${photo.imageMediaMetadata?.cameraModel || ''} • ISO ${photo.imageMediaMetadata?.isoSpeed || '-'} • f/${photo.imageMediaMetadata?.aperture || '-'}`;
+                                                    const exifString = `${photo.imageMediaMetadata?.cameraMake || ''} ${photo.imageMediaMetadata?.cameraModel || ''} • ISO ${photo.imageMediaMetadata?.isoSpeed || '-'} • f/${photo.imageMediaMetadata?.aperture || '-'}`;
 
-                                            return (
-                                                <motion.div
-                                                    key={photo.id}
-                                                    initial={{ opacity: 0, y: 20 }}
-                                                    animate={{ opacity: 1, y: 0 }}
-                                                    transition={{ duration: 0.5, delay: index * 0.05 }}
-                                                    className={`break-inside-avoid inline-block w-full align-top bg-white p-3 shadow-[0_4px_20px_-4px_rgba(0,0,0,0.1)] hover:shadow-[0_8px_30px_-4px_rgba(0,0,0,0.15)] transition-shadow duration-300 ease-in-out cursor-zoom-in group relative ${itemSpacing[gridDensity]}`}
-                                                    style={{
-                                                        breakInside: 'avoid',
-                                                        WebkitBreakInside: 'avoid'
-                                                    }}
-                                                    onClick={() => setSelectedPhoto({
-                                                        src: photo.thumbnailLink ? photo.thumbnailLink.replace(/=s\d+$/, '=s3000') : imageUrl,
-                                                        alt: photo.name,
-                                                        metadata: photo.imageMediaMetadata,
-                                                        createdTime: photo.createdTime,
-                                                        date: getPhotoDate(photo),
-                                                        id: photo.id
-                                                    })}
-                                                >
-                                                    <LazyImage
-                                                        src={thumbnailUrl}
-                                                        alt={photo.name}
-                                                        className="aspect-auto w-full"
-                                                    />
+                                                    return (
+                                                        <motion.div
+                                                            key={photo.id}
+                                                            initial={{ opacity: 0, y: 20 }}
+                                                            animate={{ opacity: 1, y: 0 }}
+                                                            transition={{ duration: 0.4, delay: Math.min(originalIndex * 0.03, 0.4) }}
+                                                            className="w-full bg-white p-3 shadow-[0_4px_20px_-4px_rgba(0,0,0,0.1)] hover:shadow-[0_8px_30px_-4px_rgba(0,0,0,0.15)] transition-shadow duration-300 ease-in-out cursor-zoom-in group relative"
+                                                            onClick={() => setSelectedPhoto({
+                                                                src: photo.thumbnailLink ? photo.thumbnailLink.replace(/=s\d+$/, '=s3000') : imageUrl,
+                                                                alt: photo.name,
+                                                                metadata: photo.imageMediaMetadata,
+                                                                createdTime: photo.createdTime,
+                                                                date: getPhotoDate(photo),
+                                                                id: photo.id
+                                                            })}
+                                                        >
+                                                            <LazyImage
+                                                                src={thumbnailUrl}
+                                                                alt={photo.name}
+                                                                className="aspect-auto w-full"
+                                                            />
 
-                                                    <div className="absolute inset-0 bg-black/40 opacity-0 group-hover:opacity-100 transition-opacity duration-300 flex items-end p-4 pointer-events-none">
-                                                        <div className="text-white/90 font-mono text-[10px] tracking-widest uppercase border-l-2 border-film-red pl-2">
-                                                            <p>{exifString}</p>
-                                                            <p className="opacity-70">{getPhotoDate(photo).toISOString().split('T')[0]}</p>
-                                                        </div>
-                                                    </div>
-                                                </motion.div>
-                                            );
-                                        })}
+                                                            <div className="absolute inset-0 bg-black/40 opacity-0 group-hover:opacity-100 transition-opacity duration-300 flex items-end p-4 pointer-events-none">
+                                                                <div className="text-white/90 font-mono text-[10px] tracking-widest uppercase border-l-2 border-film-red pl-2">
+                                                                    <p>{exifString}</p>
+                                                                    <p className="opacity-70">{getPhotoDate(photo).toISOString().split('T')[0]}</p>
+                                                                </div>
+                                                            </div>
+                                                        </motion.div>
+                                                    );
+                                                })}
+                                            </div>
+                                        ))}
                                     </div>
                                 );
                             })()}
                         </motion.section>
                     )}
 
-                    {photos.length === 0 && !loading && (
-                        <div className="flex flex-col items-center justify-center py-32 text-gray-500">
-                            <div className="bg-gray-800/50 p-6 rounded-full mb-4">
-                                <ImageIcon size={48} className="opacity-50" />
+                    {images.length === 0 && !loading && (
+                        <div className="flex flex-col items-center justify-center py-32 text-film-gray">
+                            <div className="bg-film-paper p-6 rounded-full mb-4">
+                                <ImageIcon size={48} className="opacity-50 text-film-black" />
                             </div>
-                            <p className="text-lg">No content found in this folder.</p>
+                            <p className="text-lg font-serif italic text-film-black">No photos in this section.</p>
+                            {availableFolders.length > 0 && !currentFolderId && (
+                                <p className="text-xs font-mono text-film-red mt-2 uppercase tracking-widest">
+                                    Select a collection pill above to view photos
+                                </p>
+                            )}
                         </div>
                     )}
                 </div>
