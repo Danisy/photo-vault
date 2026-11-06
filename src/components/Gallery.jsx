@@ -49,7 +49,7 @@ const Gallery = () => {
     const [error, setError] = useState(null);
     const [selectedPhoto, setSelectedPhoto] = useState(null);
     const [currentFolderId, setCurrentFolderId] = useState('');
-    const [currentFolderName, setCurrentFolderName] = useState('Collection');
+    const [currentFolderName, setCurrentFolderName] = useState('Canon 60D');
     const [sortOrder, setSortOrder] = useState('desc'); // 'desc' = Newest first, 'asc' = Oldest first
     const [gridDensity, setGridDensity] = useState('medium'); // 'low', 'medium', 'high'
     const [columnCount, setColumnCount] = useState(4);
@@ -249,10 +249,10 @@ const Gallery = () => {
                 <p>{error}</p>
                 {currentFolderId && (
                     <button
-                        onClick={() => handleFolderSelect('', 'Collection')}
+                        onClick={() => handleFolderSelect('', 'Canon 60D')}
                         className="mt-4 px-4 py-2 bg-gray-800 rounded hover:bg-gray-700 text-white"
                     >
-                        Return to All Photos
+                        Return to Canon 60D
                     </button>
                 )}
             </div>
@@ -270,14 +270,14 @@ const Gallery = () => {
                             {availableFolders.length > 0 ? (
                                 <div className="flex items-center gap-2">
                                     <button
-                                        onClick={() => handleFolderSelect('', 'Collection')}
+                                        onClick={() => handleFolderSelect('', 'Canon 60D')}
                                         className={`whitespace-nowrap px-4 py-1.5 rounded-full border text-xs font-mono tracking-wide transition-all ${
                                             !currentFolderId
                                                 ? 'bg-film-red text-film-cream border-film-red shadow-sm font-medium'
                                                 : 'border-film-red/30 text-film-red hover:border-film-red hover:bg-film-paper/60'
                                         }`}
                                     >
-                                        All Photos
+                                        Canon 60D
                                     </button>
                                     {availableFolders.map((folder) => {
                                         const isActive = currentFolderId === folder.id;
@@ -304,7 +304,7 @@ const Gallery = () => {
                                             Loading...
                                         </span>
                                     ) : (
-                                        currentFolderName === 'Collection' ? 'All Photos' : currentFolderName
+                                        currentFolderName
                                     )}
                                 </span>
                             )}
@@ -371,7 +371,7 @@ const Gallery = () => {
                                         animate={{ opacity: 1, y: 0 }}
                                         className="text-4xl md:text-5xl font-serif italic text-film-black mb-2"
                                     >
-                                        {currentFolderName === 'Collection' ? 'All Photos' : currentFolderName}
+                                        {currentFolderName}
                                     </motion.h2>
 
                                     <h3 className="text-sm font-mono text-film-gray flex items-center gap-2">
