@@ -1,8 +1,9 @@
 "use client";
 import React, { useState, useEffect } from 'react';
+import Image from 'next/image';
 import { fetchPhotos, getImageUrl } from '../services/api';
 import Lightbox from './Lightbox';
-import { Loader2, Image as ImageIcon, ArrowUpDown, GripHorizontal, LayoutGrid, Grid3x3 } from 'lucide-react';
+import { Loader2, Image as ImageIcon, ArrowUpDown, GripHorizontal, LayoutGrid, Grid3x3, Pin } from 'lucide-react';
 import { motion } from 'framer-motion';
 
 const PINNED_NAME_PATTERN = /^_PIN_\s*/i;
@@ -30,18 +31,20 @@ const getPhotoDate = (photo) => {
     }
 };
 
-const LazyImage = ({ src, alt, className, style, onClick }) => {
+const LazyImage = ({ src, alt, width, height, className, style, onClick }) => {
     const [isLoaded, setIsLoaded] = useState(false);
 
     return (
         <div className={`relative overflow-hidden bg-film-paper ${className}`} style={style} onClick={onClick}>
             {/* Small placeholder or just background color is handled by parent/bg-film-paper */}
-            <img
+            <Image
                 src={src}
                 alt={alt}
-                loading="lazy"
+                width={width || 1200}
+                height={height || 800}
                 onLoad={() => setIsLoaded(true)}
-                className={`w-full h-full object-cover transition-all duration-700 ease-in-out ${isLoaded ? 'opacity-100 blur-0 scale-100' : 'opacity-0 blur-xl scale-105'
+                sizes="(max-width: 768px) 100vw, (max-width: 1280px) 50vw, 25vw"
+                className={`w-full h-auto object-cover transition-all duration-700 ease-in-out ${isLoaded ? 'opacity-100 blur-0 scale-100' : 'opacity-0 blur-xl scale-105'
                     }`}
             />
         </div>
@@ -433,9 +436,21 @@ const Gallery = () => {
                                                                 id: photo.id
                                                             })}
                                                         >
+                                                            {isPinnedPhoto(photo) && (
+                                                                <div
+                                                                    className="absolute top-5 right-5 z-10 rounded-full bg-film-red p-2 text-film-cream shadow-md"
+                                                                    title="Pinned photo"
+                                                                    aria-label="Pinned photo"
+                                                                >
+                                                                    <Pin size={14} fill="currentColor" />
+                                                                </div>
+                                                            )}
+
                                                             <LazyImage
                                                                 src={thumbnailUrl}
                                                                 alt={getDisplayName(photo)}
+                                                                width={photo.imageMediaMetadata?.width}
+                                                                height={photo.imageMediaMetadata?.height}
                                                                 className="aspect-auto w-full"
                                                             />
 

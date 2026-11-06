@@ -3,6 +3,14 @@ const nextConfig = {
     eslint: {
         ignoreDuringBuilds: false,
     },
+    images: {
+        remotePatterns: [
+            {
+                protocol: 'https',
+                hostname: '**.googleusercontent.com',
+            },
+        ],
+    },
     async headers() {
         return [{
             source: '/(.*)',
