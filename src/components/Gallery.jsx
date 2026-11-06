@@ -126,6 +126,7 @@ const Gallery = () => {
             }
             setDeepLinkChecked(true); // Mark check as done
         }
+        // eslint-disable-next-line react-hooks/exhaustive-deps
     }, [photos]);
 
     // Update URL when selectedPhoto changes
@@ -161,31 +162,6 @@ const Gallery = () => {
         setCurrentFolderId(folderId);
         setCurrentFolderName(folderName);
     };
-
-    // Skeleton Loader Component
-    const SkeletonGrid = () => (
-        <div className="grid grid-cols-2 md:grid-cols-4 lg:grid-cols-5 gap-4 p-4">
-            {Array.from({ length: 10 }).map((_, i) => (
-                <div key={i} className="aspect-square bg-film-paper rounded-sm animate-pulse" />
-            ))}
-        </div>
-    );
-
-    if (error) {
-        return (
-            <div className="text-center text-red-400 py-10">
-                <p>{error}</p>
-                {currentFolderId && (
-                    <button
-                        onClick={() => handleFolderSelect('', 'Collection')}
-                        className="mt-4 px-4 py-2 bg-gray-800 rounded hover:bg-gray-700 text-white"
-                    >
-                        Return to All Photos
-                    </button>
-                )}
-            </div>
-        );
-    }
 
     const rawImages = photos.filter(item => item.mimeType !== 'application/vnd.google-apps.folder');
 
@@ -257,6 +233,31 @@ const Gallery = () => {
             return highRes === selectedPhoto.src || getImageUrl(img.id) === selectedPhoto.src;
         })
         : -1;
+
+    // Skeleton Loader Component
+    const SkeletonGrid = () => (
+        <div className="grid grid-cols-2 md:grid-cols-4 lg:grid-cols-5 gap-4 p-4">
+            {Array.from({ length: 10 }).map((_, i) => (
+                <div key={i} className="aspect-square bg-film-paper rounded-sm animate-pulse" />
+            ))}
+        </div>
+    );
+
+    if (error) {
+        return (
+            <div className="text-center text-red-400 py-10">
+                <p>{error}</p>
+                {currentFolderId && (
+                    <button
+                        onClick={() => handleFolderSelect('', 'Collection')}
+                        className="mt-4 px-4 py-2 bg-gray-800 rounded hover:bg-gray-700 text-white"
+                    >
+                        Return to All Photos
+                    </button>
+                )}
+            </div>
+        );
+    }
 
     return (
         <>
