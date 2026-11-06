@@ -5,6 +5,12 @@ import Lightbox from './Lightbox';
 import { Loader2, Image as ImageIcon, ArrowUpDown, GripHorizontal, LayoutGrid, Grid3x3 } from 'lucide-react';
 import { motion } from 'framer-motion';
 
+const PINNED_NAME_PATTERN = /^_PIN_\s*/i;
+
+const isPinnedPhoto = (photo) => PINNED_NAME_PATTERN.test(photo.name || '');
+
+const getDisplayName = (photo) => (photo.name || '').replace(PINNED_NAME_PATTERN, '');
+
 const getPhotoDate = (photo) => {
     try {
         // Try to get EXIF date first (format often: "YYYY:MM:DD HH:MM:SS")
@@ -116,7 +122,7 @@ const Gallery = () => {
                     const imageUrl = getImageUrl(photo.id);
                     setSelectedPhoto({
                         src: photo.thumbnailLink ? photo.thumbnailLink.replace(/=s\d+$/, '=s3000') : imageUrl,
-                        alt: photo.name,
+                        alt: getDisplayName(photo),
                         metadata: photo.imageMediaMetadata,
                         createdTime: photo.createdTime,
                         date: getPhotoDate(photo),
@@ -167,6 +173,9 @@ const Gallery = () => {
 
     const images = React.useMemo(() => {
         return [...rawImages].sort((a, b) => {
+            const pinnedDifference = Number(isPinnedPhoto(b)) - Number(isPinnedPhoto(a));
+            if (pinnedDifference !== 0) return pinnedDifference;
+
             const dateA = getPhotoDate(a);
             const dateB = getPhotoDate(b);
             return sortOrder === 'desc' ? dateB - dateA : dateA - dateB;
@@ -196,7 +205,7 @@ const Gallery = () => {
             const nextPhoto = images[currentIndex + 1];
             setSelectedPhoto({
                 src: nextPhoto.thumbnailLink ? nextPhoto.thumbnailLink.replace(/=s\d+$/, '=s3000') : getImageUrl(nextPhoto.id),
-                alt: nextPhoto.name,
+                alt: getDisplayName(nextPhoto),
                 metadata: nextPhoto.imageMediaMetadata,
                 createdTime: nextPhoto.createdTime,
                 date: getPhotoDate(nextPhoto),
@@ -218,7 +227,7 @@ const Gallery = () => {
             const prevPhoto = images[currentIndex - 1];
             setSelectedPhoto({
                 src: prevPhoto.thumbnailLink ? prevPhoto.thumbnailLink.replace(/=s\d+$/, '=s3000') : getImageUrl(prevPhoto.id),
-                alt: prevPhoto.name,
+                alt: getDisplayName(prevPhoto),
                 metadata: prevPhoto.imageMediaMetadata,
                 createdTime: prevPhoto.createdTime,
                 date: getPhotoDate(prevPhoto),
@@ -417,7 +426,7 @@ const Gallery = () => {
                                                             className="w-full bg-white p-3 shadow-[0_4px_20px_-4px_rgba(0,0,0,0.1)] hover:shadow-[0_8px_30px_-4px_rgba(0,0,0,0.15)] transition-shadow duration-300 ease-in-out cursor-zoom-in group relative"
                                                             onClick={() => setSelectedPhoto({
                                                                 src: photo.thumbnailLink ? photo.thumbnailLink.replace(/=s\d+$/, '=s3000') : imageUrl,
-                                                                alt: photo.name,
+                                                                alt: getDisplayName(photo),
                                                                 metadata: photo.imageMediaMetadata,
                                                                 createdTime: photo.createdTime,
                                                                 date: getPhotoDate(photo),
@@ -426,7 +435,7 @@ const Gallery = () => {
                                                         >
                                                             <LazyImage
                                                                 src={thumbnailUrl}
-                                                                alt={photo.name}
+                                                                alt={getDisplayName(photo)}
                                                                 className="aspect-auto w-full"
                                                             />
 
