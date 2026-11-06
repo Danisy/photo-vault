@@ -1,4 +1,5 @@
 import { listImages } from '@/lib/driveClient';
+import { checkRateLimit } from '@/lib/rateLimit';
 import { NextResponse } from 'next/server';
 import NodeCache from 'node-cache';
 
@@ -9,11 +10,16 @@ export const dynamic = 'force-dynamic'; // Always run as serverless function, no
 
 export async function GET(request) {
     try {
+        if (!checkRateLimit(request, 60)) {
+            return NextResponse.json({ error: 'Too many requests' }, { status: 429 });
+        }
+
         const { searchParams } = new URL(request.url);
         const folderId = searchParams.get('folderId') || process.env.DRIVE_FOLDER_ID || process.env.GOOGLE_DRIVE_FOLDER_ID;
 
         if (!folderId) {
-            return NextResponse.json({ error: 'DRIVE_FOLDER_ID not configured' }, { status: 500 });
+            console.error('Public gallery folder is not configured');
+            return NextResponse.json({ error: 'Gallery is temporarily unavailable' }, { status: 500 });
         }
 
         // Check cache before fetching
@@ -29,6 +35,8 @@ export async function GET(request) {
         return NextResponse.json(files);
     } catch (error) {
         console.error('Error fetching photos:', error);
-        return NextResponse.json({ error: 'Failed to fetch photos', details: error.message }, { status: 500 });
+        const status = error.message.startsWith('Invalid ') ||
+            error.message.includes('outside the public gallery') ? 400 : 500;
+        return NextResponse.json({ error: status === 400 ? 'Invalid gallery folder' : 'Failed to fetch photos' }, { status });
     }
 }

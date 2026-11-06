@@ -4,9 +4,8 @@ const API_Base = '/api';
 
 export const fetchPhotos = async (folderId = '') => {
     try {
-        const response = await axios.get(`${API_Base}/photos`, {
-            params: { folderId }
-        });
+        const params = folderId ? { folderId } : undefined;
+        const response = await axios.get(`${API_Base}/photos`, { params });
         return response.data;
     } catch (error) {
         console.error('Error fetching photos:', error);

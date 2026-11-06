@@ -16,6 +16,14 @@ bun dev
 
 Open [http://localhost:3000](http://localhost:3000) with your browser to see the result.
 
+## Security configuration
+
+The public gallery reads Google Drive credentials from server-only environment
+variables: `GOOGLE_CLIENT_EMAIL`, `GOOGLE_PRIVATE_KEY`, and
+`DRIVE_FOLDER_ID` (or `GOOGLE_DRIVE_FOLDER_ID`). The API only exposes images
+in the configured folder and its direct child folders. Do not add service
+account JSON files to the project or expose these variables to the client.
+
 You can start editing the page by modifying `app/page.js`. The page auto-updates as you edit the file.
 
 This project uses [`next/font`](https://nextjs.org/docs/basic-features/font-optimization) to automatically optimize and load Inter, a custom Google Font.
