@@ -12,7 +12,7 @@ const Hero = ({ onOpenAbout }) => {
                 className="max-w-4xl mx-auto"
             >
                 <h1 className="text-6xl md:text-8xl font-serif font-black tracking-tight text-film-black mb-6 selection:bg-film-red selection:text-white">
-                    zygrace <span className="italic block md:inline font-light">Collection</span>
+                    Danisy <span className="italic block md:inline font-light">Collection</span>
                 </h1>
 
                 <p className="text-lg md:text-xl font-mono text-film-gray max-w-2xl mx-auto leading-relaxed mb-8">
