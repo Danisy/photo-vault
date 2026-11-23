@@ -6,11 +6,19 @@ import Lightbox from './Lightbox';
 import { Loader2, Image as ImageIcon, ArrowUpDown, GripHorizontal, LayoutGrid, Grid3x3, Pin } from 'lucide-react';
 import { motion } from 'framer-motion';
 
+const TOP_NAME_PATTERN = /^_TOP_\s*/i;
 const PINNED_NAME_PATTERN = /^_PIN_\s*/i;
 
-const isPinnedPhoto = (photo) => PINNED_NAME_PATTERN.test(photo.name || '');
+const getPhotoPriority = (photo) => {
+    const name = photo.name || '';
+    if (TOP_NAME_PATTERN.test(name)) return 2;
+    if (PINNED_NAME_PATTERN.test(name)) return 1;
+    return 0;
+};
 
-const getDisplayName = (photo) => (photo.name || '').replace(PINNED_NAME_PATTERN, '');
+const hasPriorityBadge = (photo) => getPhotoPriority(photo) > 0;
+
+const getDisplayName = (photo) => (photo.name || '').replace(/^_(?:TOP|PIN)_\s*/i, '');
 
 const getPhotoDate = (photo) => {
     try {
@@ -196,8 +204,8 @@ const Gallery = () => {
 
     const images = React.useMemo(() => {
         return [...rawImages].sort((a, b) => {
-            const pinnedDifference = Number(isPinnedPhoto(b)) - Number(isPinnedPhoto(a));
-            if (pinnedDifference !== 0) return pinnedDifference;
+            const priorityDifference = getPhotoPriority(b) - getPhotoPriority(a);
+            if (priorityDifference !== 0) return priorityDifference;
 
             const dateA = getPhotoDate(a);
             const dateB = getPhotoDate(b);
@@ -486,11 +494,11 @@ const Gallery = () => {
                                                                 id: photo.id
                                                             })}
                                                         >
-                                                            {isPinnedPhoto(photo) && (
+                                                            {hasPriorityBadge(photo) && (
                                                                 <div
                                                                     className="absolute top-5 right-5 z-10 rounded-full bg-film-red p-2 text-film-cream shadow-md"
-                                                                    title="Pinned photo"
-                                                                    aria-label="Pinned photo"
+                                                                    title="Priority photo"
+                                                                    aria-label="Priority photo"
                                                                 >
                                                                     <Pin size={14} fill="currentColor" />
                                                                 </div>
