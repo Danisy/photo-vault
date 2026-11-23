@@ -14,6 +14,48 @@ const assertValidDriveId = (id, name = 'Drive ID') => {
 
 const escapeDriveQueryValue = (value) => value.replace(/\\/g, '\\\\').replace(/'/g, "\\'");
 
+const getFolderDepth = async (drive, folderId, rootFolderId) => {
+    assertValidDriveId(folderId, 'folder ID');
+    if (folderId === rootFolderId) return 0;
+
+    const folder = await drive.files.get({
+        fileId: folderId,
+        fields: 'id,mimeType,parents,trashed',
+    });
+    const data = folder.data;
+
+    if (data.mimeType !== 'application/vnd.google-apps.folder' || data.trashed) {
+        throw new Error('Requested folder is outside the public gallery');
+    }
+
+    const parents = data.parents || [];
+    if (parents.includes(rootFolderId)) return 1;
+
+    const parentFolders = await Promise.all(parents.map((parentId) => drive.files.get({
+        fileId: parentId,
+        fields: 'mimeType,parents,trashed',
+    })));
+    const isApprovedSubfolder = parentFolders.some(({ data: parent }) =>
+        parent.mimeType === 'application/vnd.google-apps.folder' &&
+        !parent.trashed &&
+        parent.parents?.includes(rootFolderId)
+    );
+
+    if (isApprovedSubfolder) return 2;
+    throw new Error('Requested folder is outside the public gallery');
+};
+
+const listFolderFiles = async (drive, folderId, depth) => {
+    const folderQuery = depth < 2 ? " or mimeType = 'application/vnd.google-apps.folder'" : '';
+    const result = await drive.files.list({
+        q: `'${escapeDriveQueryValue(folderId)}' in parents and (mimeType contains 'image/'${folderQuery}) and trashed = false`,
+        fields: 'files(id, name, mimeType, thumbnailLink, webContentLink, imageMediaMetadata, createdTime)',
+        pageSize: 100,
+        orderBy: 'folder, name',
+    });
+    return result.data.files || [];
+};
+
 export const getDriveClient = () => {
     const scopes = ['https://www.googleapis.com/auth/drive.readonly'];
 
@@ -51,33 +93,40 @@ export const listImages = async (folderId) => {
     const rootFolderId = getConfiguredFolderId();
     assertValidDriveId(rootFolderId, 'configured folder ID');
     const requestedFolderId = folderId || rootFolderId;
-    assertValidDriveId(requestedFolderId, 'folder ID');
 
     try {
-        if (requestedFolderId !== rootFolderId) {
-            const folder = await drive.files.get({
-                fileId: requestedFolderId,
-                fields: 'id,mimeType,parents,trashed',
-            });
-            const isApprovedFolder = folder.data.mimeType === 'application/vnd.google-apps.folder' &&
-                !folder.data.trashed &&
-                folder.data.parents?.includes(rootFolderId);
-
-            if (!isApprovedFolder) {
-                throw new Error('Requested folder is outside the public gallery');
-            }
-        }
-
-        const res = await drive.files.list({
-            q: `'${escapeDriveQueryValue(requestedFolderId)}' in parents and (mimeType contains 'image/' or mimeType = 'application/vnd.google-apps.folder') and trashed = false`,
-            fields: 'files(id, name, mimeType, thumbnailLink, webContentLink, imageMediaMetadata, createdTime)',
-            pageSize: 100,
-            orderBy: 'folder, name',
-        });
-
-        return res.data.files;
+        const depth = await getFolderDepth(drive, requestedFolderId, rootFolderId);
+        return await listFolderFiles(drive, requestedFolderId, depth);
     } catch (error) {
         console.error('Error listing files from Google Drive:', error);
+        throw error;
+    }
+};
+
+export const listImagesWithSubfolders = async (folderId) => {
+    const drive = getDriveClient();
+    const rootFolderId = getConfiguredFolderId();
+    assertValidDriveId(rootFolderId, 'configured folder ID');
+    assertValidDriveId(folderId, 'folder ID');
+
+    try {
+        const depth = await getFolderDepth(drive, folderId, rootFolderId);
+        if (depth !== 1) {
+            throw new Error('Subfolder aggregation is only available for top-level gallery folders');
+        }
+
+        const files = await listFolderFiles(drive, folderId, depth);
+        const folders = files.filter((file) => file.mimeType === 'application/vnd.google-apps.folder');
+        const photos = files.filter((file) => file.mimeType !== 'application/vnd.google-apps.folder');
+        const subfolders = await Promise.all(folders.map(async (folder) => ({
+            ...folder,
+            photos: (await listFolderFiles(drive, folder.id, 2))
+                .filter((file) => file.mimeType !== 'application/vnd.google-apps.folder'),
+        })));
+
+        return { photos, subfolders };
+    } catch (error) {
+        console.error('Error listing gallery folder contents from Google Drive:', error);
         throw error;
     }
 };
@@ -95,22 +144,16 @@ export const getFileStream = async (fileId) => {
         });
         const parents = metadata.data.parents || [];
         const isDirectGalleryFile = parents.includes(rootFolderId);
-        let isApprovedChildFile = false;
-
-        if (!isDirectGalleryFile) {
-            const parentFolders = await Promise.all(parents.map((parentId) => drive.files.get({
-                fileId: parentId,
-                fields: 'mimeType,parents,trashed',
-            })));
-            isApprovedChildFile = parentFolders.some(({ data }) =>
-                data.mimeType === 'application/vnd.google-apps.folder' &&
-                !data.trashed &&
-                data.parents?.includes(rootFolderId)
-            );
-        }
+        const parentDepths = isDirectGalleryFile
+            ? []
+            : await Promise.all(parents.map((parentId) =>
+                getFolderDepth(drive, parentId, rootFolderId)
+            ));
+        const isApprovedGalleryFile = isDirectGalleryFile ||
+            parentDepths.some((depth) => depth === 1 || depth === 2);
 
         if (metadata.data.trashed || !IMAGE_MIME_PATTERN.test(metadata.data.mimeType || '') ||
-            (!isDirectGalleryFile && !isApprovedChildFile)) {
+            !isApprovedGalleryFile) {
             throw new Error('Requested file is outside the public image gallery');
         }
 

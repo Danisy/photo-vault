@@ -54,6 +54,9 @@ const LazyImage = ({ src, alt, width, height, className, style, onClick }) => {
 const Gallery = () => {
     const [photos, setPhotos] = useState([]);
     const [availableFolders, setAvailableFolders] = useState([]);
+    const [availableSubfolders, setAvailableSubfolders] = useState([]);
+    const [subfolderContents, setSubfolderContents] = useState([]);
+    const [selectedSubfolderId, setSelectedSubfolderId] = useState('');
     const [loading, setLoading] = useState(true);
     const [error, setError] = useState(null);
     const [selectedPhoto, setSelectedPhoto] = useState(null);
@@ -91,13 +94,21 @@ const Gallery = () => {
         const loadPhotos = async () => {
             setLoading(true);
             try {
-                const data = await fetchPhotos(currentFolderId);
-                setPhotos(data);
+                const data = await fetchPhotos(currentFolderId, Boolean(currentFolderId));
 
                 // If we are at root, store the folders so pills stay available across all sections
                 if (!currentFolderId) {
+                    setPhotos(data);
                     const rootFolders = data.filter(item => item.mimeType === 'application/vnd.google-apps.folder');
                     setAvailableFolders(rootFolders);
+                    setAvailableSubfolders([]);
+                    setSubfolderContents([]);
+                } else {
+                    const folderPhotos = data.photos || [];
+                    const subfolders = data.subfolders || [];
+                    setAvailableSubfolders(subfolders);
+                    setSubfolderContents(subfolders);
+                    setPhotos([...folderPhotos, ...subfolders.flatMap(folder => folder.photos)]);
                 }
 
                 setError(null);
@@ -167,12 +178,21 @@ const Gallery = () => {
     }, []);
 
     const handleFolderSelect = (folderId, folderName) => {
-        if (folderId === currentFolderId && !loading) return;
+        if (folderId === currentFolderId && !loading) {
+            setSelectedSubfolderId('');
+            return;
+        }
         setCurrentFolderId(folderId);
         setCurrentFolderName(folderName);
+        setSelectedSubfolderId('');
     };
 
-    const rawImages = photos.filter(item => item.mimeType !== 'application/vnd.google-apps.folder');
+    const activeSubfolder = subfolderContents.find(folder => folder.id === selectedSubfolderId);
+    const activeFolderName = activeSubfolder?.name || currentFolderName;
+    const visiblePhotos = selectedSubfolderId
+        ? activeSubfolder?.photos || []
+        : photos;
+    const rawImages = visiblePhotos.filter(item => item.mimeType !== 'application/vnd.google-apps.folder');
 
     const images = React.useMemo(() => {
         return [...rawImages].sort((a, b) => {
@@ -361,6 +381,36 @@ const Gallery = () => {
                             </div>
                         )}
                     </div>
+                    {currentFolderId && availableSubfolders.length > 0 && (
+                        <div className="flex items-center gap-2 overflow-x-auto no-scrollbar pt-3">
+                            <button
+                                onClick={() => setSelectedSubfolderId('')}
+                                className={`whitespace-nowrap px-3 py-1 rounded-full border text-[10px] font-mono tracking-wide transition-all ${
+                                    !selectedSubfolderId
+                                        ? 'bg-film-black text-film-cream border-film-black shadow-sm font-medium'
+                                        : 'border-film-black/20 text-film-black/60 hover:border-film-black/50 hover:bg-film-paper/60'
+                                }`}
+                            >
+                                All
+                            </button>
+                            {availableSubfolders.map((folder) => {
+                                const isActive = selectedSubfolderId === folder.id;
+                                return (
+                                    <button
+                                        key={folder.id}
+                                        onClick={() => setSelectedSubfolderId(folder.id)}
+                                        className={`whitespace-nowrap px-3 py-1 rounded-full border text-[10px] font-mono tracking-wide transition-all ${
+                                            isActive
+                                                ? 'bg-film-black text-film-cream border-film-black shadow-sm font-medium'
+                                                : 'border-film-black/20 text-film-black/60 hover:border-film-black/50 hover:bg-film-paper/60'
+                                        }`}
+                                    >
+                                        {folder.name}
+                                    </button>
+                                );
+                            })}
+                        </div>
+                    )}
                 </div>
             </div>
 
@@ -378,12 +428,12 @@ const Gallery = () => {
                                 <div>
                                     {/* Current Folder Title */}
                                     <motion.h2
-                                        key={currentFolderName}
+                                        key={activeFolderName}
                                         initial={{ opacity: 0, y: 10 }}
                                         animate={{ opacity: 1, y: 0 }}
                                         className="text-4xl md:text-5xl font-serif italic text-film-black mb-2"
                                     >
-                                        {currentFolderName}
+                                        {activeFolderName}
                                     </motion.h2>
 
                                     <h3 className="text-sm font-mono text-film-gray flex items-center gap-2">

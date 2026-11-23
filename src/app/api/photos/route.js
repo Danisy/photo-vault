@@ -1,4 +1,4 @@
-import { listImages } from '@/lib/driveClient';
+import { listImages, listImagesWithSubfolders } from '@/lib/driveClient';
 import { checkRateLimit } from '@/lib/rateLimit';
 import { NextResponse } from 'next/server';
 import NodeCache from 'node-cache';
@@ -16,6 +16,7 @@ export async function GET(request) {
 
         const { searchParams } = new URL(request.url);
         const folderId = searchParams.get('folderId') || process.env.DRIVE_FOLDER_ID || process.env.GOOGLE_DRIVE_FOLDER_ID;
+        const includeSubfolders = searchParams.get('includeSubfolders') === 'true';
 
         if (!folderId) {
             console.error('Public gallery folder is not configured');
@@ -23,14 +24,17 @@ export async function GET(request) {
         }
 
         // Check cache before fetching
-        if (cache.has(folderId)) {
-            return NextResponse.json(cache.get(folderId));
+        const cacheKey = `${folderId}:${includeSubfolders ? 'with-subfolders' : 'direct'}`;
+        if (cache.has(cacheKey)) {
+            return NextResponse.json(cache.get(cacheKey));
         }
 
-        const files = await listImages(folderId);
+        const files = includeSubfolders
+            ? await listImagesWithSubfolders(folderId)
+            : await listImages(folderId);
 
         // Save fresh data to cache
-        cache.set(folderId, files);
+        cache.set(cacheKey, files);
 
         return NextResponse.json(files);
     } catch (error) {
