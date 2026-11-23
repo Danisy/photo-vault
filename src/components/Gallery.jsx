@@ -8,6 +8,7 @@ import { motion } from 'framer-motion';
 
 const TOP_NAME_PATTERN = /^_TOP_\s*/i;
 const PINNED_NAME_PATTERN = /^_PIN_\s*/i;
+const SUBFOLDER_PRIORITY_PATTERN = /^_P(\d+)_\s*/i;
 
 const getPhotoPriority = (photo) => {
     const name = photo.name || '';
@@ -19,6 +20,14 @@ const getPhotoPriority = (photo) => {
 const hasPriorityBadge = (photo) => getPhotoPriority(photo) > 0;
 
 const getDisplayName = (photo) => (photo.name || '').replace(/^_(?:TOP|PIN)_\s*/i, '');
+
+const getSubfolderPriority = (folder) => {
+    const match = (folder.name || '').match(SUBFOLDER_PRIORITY_PATTERN);
+    return match ? Number(match[1]) : null;
+};
+
+const getSubfolderDisplayName = (folder) =>
+    (folder.name || '').replace(SUBFOLDER_PRIORITY_PATTERN, '');
 
 const getPhotoDate = (photo) => {
     try {
@@ -196,7 +205,16 @@ const Gallery = () => {
     };
 
     const activeSubfolder = subfolderContents.find(folder => folder.id === selectedSubfolderId);
-    const activeFolderName = activeSubfolder?.name || currentFolderName;
+    const activeFolderName = activeSubfolder
+        ? getSubfolderDisplayName(activeSubfolder)
+        : currentFolderName;
+    const sortedSubfolders = [...availableSubfolders].sort((a, b) => {
+        const priorityA = getSubfolderPriority(a);
+        const priorityB = getSubfolderPriority(b);
+        if (priorityA === null) return priorityB === null ? 0 : 1;
+        if (priorityB === null) return -1;
+        return priorityA - priorityB;
+    });
     const visiblePhotos = selectedSubfolderId
         ? activeSubfolder?.photos || []
         : photos;
@@ -401,7 +419,7 @@ const Gallery = () => {
                             >
                                 All
                             </button>
-                            {availableSubfolders.map((folder) => {
+                            {sortedSubfolders.map((folder) => {
                                 const isActive = selectedSubfolderId === folder.id;
                                 return (
                                     <button
@@ -413,7 +431,7 @@ const Gallery = () => {
                                                 : 'border-film-black/20 text-film-black/60 hover:border-film-black/50 hover:bg-film-paper/60'
                                         }`}
                                     >
-                                        {folder.name}
+                                        {getSubfolderDisplayName(folder)}
                                     </button>
                                 );
                             })}

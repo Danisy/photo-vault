@@ -21,8 +21,14 @@ Open [http://localhost:3000](http://localhost:3000) with your browser to see the
 The public gallery reads Google Drive credentials from server-only environment
 variables: `GOOGLE_CLIENT_EMAIL`, `GOOGLE_PRIVATE_KEY`, and
 `DRIVE_FOLDER_ID` (or `GOOGLE_DRIVE_FOLDER_ID`). The API only exposes images
-in the configured folder and its direct child folders. Do not add service
-account JSON files to the project or expose these variables to the client.
+in the configured folder, its direct child folders, and their direct child
+folders. Do not add service account JSON files to the project or expose these
+variables to the client.
+
+Subfolders inside a top-level gallery folder can be prioritized by prefixing
+their names with `_P01_`, `_P02_`, and so on. The prefix is hidden in the
+gallery, priority pills appear before unmarked subfolders, and `All` remains
+the first pill.
 
 You can start editing the page by modifying `app/page.js`. The page auto-updates as you edit the file.
 
